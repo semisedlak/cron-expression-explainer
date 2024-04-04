@@ -7,11 +7,6 @@ use function assert;
 final class DayOfMonthInterpreter extends BasePartInterpreter
 {
 
-	public function deduplicateValue(string $value): string
-	{
-		return $value;
-	}
-
 	protected function getInStepName(): string
 	{
 		return $this->getInValueName();
@@ -32,16 +27,18 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 		return '';
 	}
 
-	protected function assertValueInRange(string $value): void
+	protected function translateValue(string $value): string
+	{
+		$this->assertValueInRange($value);
+
+		return $value;
+	}
+
+	private function assertValueInRange(string $value): void
 	{
 		$intValue = (int) $value;
 		assert($value === (string) $intValue);
 		assert($intValue >= 1 && $intValue <= 31);
-	}
-
-	protected function translateValue(string $value): string
-	{
-		return $value;
 	}
 
 }

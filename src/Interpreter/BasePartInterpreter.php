@@ -84,15 +84,11 @@ abstract class BasePartInterpreter
 			return $this->getAsteriskDescription();
 		}
 
-		$this->assertValueInRange($value);
-
 		$name = $this->getInValueName();
 
 		return ($renderName ? ($name !== '' ? "$name " : '') : '')
 			. $this->translateValue($value);
 	}
-
-	abstract public function deduplicateValue(string $value): string;
 
 	abstract protected function getInValueName(): string;
 
@@ -101,8 +97,6 @@ abstract class BasePartInterpreter
 	abstract protected function getInStepName(): string;
 
 	abstract protected function getAsteriskDescription(): string;
-
-	abstract protected function assertValueInRange(string $value): void;
 
 	abstract protected function translateValue(string $value): string;
 

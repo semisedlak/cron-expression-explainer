@@ -7,11 +7,6 @@ use function assert;
 final class MinuteInterpreter extends BasePartInterpreter
 {
 
-	public function deduplicateValue(string $value): string
-	{
-		return $value;
-	}
-
 	protected function getInStepName(): string
 	{
 		return $this->getInValueName();
@@ -41,6 +36,8 @@ final class MinuteInterpreter extends BasePartInterpreter
 
 	protected function translateValue(string $value): string
 	{
+		$this->assertValueInRange($value);
+
 		return $value;
 	}
 

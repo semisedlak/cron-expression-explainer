@@ -81,11 +81,11 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 		$dayOfWeek = $expr->getExpression(CronExpression::WEEKDAY);
 		assert($dayOfWeek !== null);
 
-		$minutePart = $this->parser->parsePart($minute, $this->minuteInterpreter);
-		$hourPart = $this->parser->parsePart($hour, $this->hourInterpreter);
-		$dayOfMonthPart = $this->parser->parsePart($dayOfMonth, $this->dayOfMonthInterpreter);
-		$monthPart = $this->parser->parsePart($month, $this->monthInterpreter);
-		$dayOfWeekPart = $this->parser->parsePart($dayOfWeek, $this->dayOfWeekInterpreter);
+		$minutePart = $this->parser->parsePart($minute);
+		$hourPart = $this->parser->parsePart($hour);
+		$dayOfMonthPart = $this->parser->parsePart($dayOfMonth);
+		$monthPart = $this->parser->parsePart($month);
+		$dayOfWeekPart = $this->parser->parsePart($dayOfWeek);
 
 		$explanation = 'At ';
 		$secondsExplanation = $this->explainSeconds($repeatSeconds);

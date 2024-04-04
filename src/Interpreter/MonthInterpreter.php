@@ -7,26 +7,6 @@ use function assert;
 final class MonthInterpreter extends BasePartInterpreter
 {
 
-	public function deduplicateValue(string $value): string
-	{
-		$map = [
-			'JAN' => '1',
-			'FEB' => '2',
-			'MAR' => '3',
-			'APR' => '4',
-			'MAY' => '5',
-			'JUN' => '6',
-			'JUL' => '7',
-			'AUG' => '8',
-			'SEP' => '9',
-			'OCT' => '10',
-			'NOV' => '11',
-			'DEC' => '12',
-		];
-
-		return $map[$value] ?? $value;
-	}
-
 	protected function getInStepName(): string
 	{
 		return $this->getInRangeName();
@@ -47,15 +27,11 @@ final class MonthInterpreter extends BasePartInterpreter
 		return '';
 	}
 
-	protected function assertValueInRange(string $value): void
-	{
-		$intValue = (int) $value;
-		assert($value === (string) $intValue);
-		assert($intValue >= 1 && $intValue <= 12);
-	}
-
 	protected function translateValue(string $value): string
 	{
+		$value = $this->deduplicateValue($value);
+		$this->assertValueInRange($value);
+
 		$map = [
 			1 => 'January',
 			2 => 'February',
@@ -72,6 +48,33 @@ final class MonthInterpreter extends BasePartInterpreter
 		];
 
 		return $map[$value];
+	}
+
+	private function deduplicateValue(string $value): string
+	{
+		$map = [
+			'JAN' => '1',
+			'FEB' => '2',
+			'MAR' => '3',
+			'APR' => '4',
+			'MAY' => '5',
+			'JUN' => '6',
+			'JUL' => '7',
+			'AUG' => '8',
+			'SEP' => '9',
+			'OCT' => '10',
+			'NOV' => '11',
+			'DEC' => '12',
+		];
+
+		return $map[$value] ?? $value;
+	}
+
+	private function assertValueInRange(string $value): void
+	{
+		$intValue = (int) $value;
+		assert($value === (string) $intValue);
+		assert($intValue >= 1 && $intValue <= 12);
 	}
 
 }

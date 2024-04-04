@@ -2,7 +2,6 @@
 
 namespace Orisai\CronExpressionExplainer\Part;
 
-use Orisai\CronExpressionExplainer\Interpreter\BasePartInterpreter;
 use function assert;
 use function explode;
 use function str_contains;
@@ -10,24 +9,24 @@ use function str_contains;
 final class PartParser
 {
 
-	public function parsePart(string $part, BasePartInterpreter $interpreter): Part
+	public function parsePart(string $part): Part
 	{
 		if (str_contains($part, ',')) {
 			$list = [];
 			foreach (explode(',', $part) as $item) {
-				$list[] = $this->parseUnlistedPart($item, $interpreter);
+				$list[] = $this->parseUnlistedPart($item);
 			}
 
 			return new ListPart($list);
 		}
 
-		return $this->parseUnlistedPart($part, $interpreter);
+		return $this->parseUnlistedPart($part);
 	}
 
 	/**
 	 * @return RangePart|StepPart|ValuePart
 	 */
-	private function parseUnlistedPart(string $part, BasePartInterpreter $interpreter): Part
+	private function parseUnlistedPart(string $part): Part
 	{
 		if (str_contains($part, '/')) {
 			$stepParts = explode('/', $part, 2);
@@ -36,34 +35,32 @@ final class PartParser
 			assert((string) $step === $stepParts[1]);
 
 			$range = str_contains($stepParts[0], '-')
-				? $this->parseRangePart($stepParts[0], $interpreter)
-				: $this->parseValuePart($stepParts[0], $interpreter);
+				? $this->parseRangePart($stepParts[0])
+				: $this->parseValuePart($stepParts[0]);
 
 			return new StepPart($range, $step);
 		}
 
 		if (str_contains($part, '-')) {
-			return $this->parseRangePart($part, $interpreter);
+			return $this->parseRangePart($part);
 		}
 
-		return $this->parseValuePart($part, $interpreter);
+		return $this->parseValuePart($part);
 	}
 
-	private function parseRangePart(string $part, BasePartInterpreter $interpreter): RangePart
+	private function parseRangePart(string $part): RangePart
 	{
 		assert(str_contains($part, '-'));
 		$range = explode('-', $part, 2);
 
 		return new RangePart(
-			$this->parseValuePart($range[0], $interpreter),
-			$this->parseValuePart($range[1], $interpreter),
+			$this->parseValuePart($range[0]),
+			$this->parseValuePart($range[1]),
 		);
 	}
 
-	private function parseValuePart(string $part, BasePartInterpreter $interpreter): ValuePart
+	private function parseValuePart(string $part): ValuePart
 	{
-		$part = $interpreter->deduplicateValue($part);
-
 		return new ValuePart($part);
 	}
 

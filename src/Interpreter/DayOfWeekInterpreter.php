@@ -7,22 +7,6 @@ use function assert;
 final class DayOfWeekInterpreter extends BasePartInterpreter
 {
 
-	public function deduplicateValue(string $value): string
-	{
-		$map = [
-			7 => '0',
-			'SUN' => '0',
-			'MON' => '1',
-			'TUE' => '2',
-			'WED' => '3',
-			'THU' => '4',
-			'FRI' => '5',
-			'SAT' => '6',
-		];
-
-		return $map[$value] ?? $value;
-	}
-
 	protected function getInStepName(): string
 	{
 		return $this->getInRangeName();
@@ -43,15 +27,11 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		return '';
 	}
 
-	protected function assertValueInRange(string $value): void
-	{
-		$intValue = (int) $value;
-		assert($value === (string) $intValue);
-		assert($intValue >= 0 && $intValue <= 6);
-	}
-
 	protected function translateValue(string $value): string
 	{
+		$value = $this->deduplicateValue($value);
+		$this->assertValueInRange($value);
+
 		$map = [
 			0 => 'Sunday',
 			1 => 'Monday',
@@ -63,6 +43,29 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		];
 
 		return $map[$value];
+	}
+
+	private function deduplicateValue(string $value): string
+	{
+		$map = [
+			7 => '0',
+			'SUN' => '0',
+			'MON' => '1',
+			'TUE' => '2',
+			'WED' => '3',
+			'THU' => '4',
+			'FRI' => '5',
+			'SAT' => '6',
+		];
+
+		return $map[$value] ?? $value;
+	}
+
+	private function assertValueInRange(string $value): void
+	{
+		$intValue = (int) $value;
+		assert($value === (string) $intValue);
+		assert($intValue >= 0 && $intValue <= 6);
 	}
 
 }
