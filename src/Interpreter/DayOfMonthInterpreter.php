@@ -31,6 +31,14 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 
 	protected function translateValue(string $value, bool $renderName): string
 	{
+		if ($value === 'L') {
+			return 'a last ' . $this->getInValueName();
+		}
+
+		if ($value === 'LW') {
+			return 'a last weekday';
+		}
+
 		$nearest = str_ends_with($value, 'W');
 		if ($nearest) {
 			$value = substr($value, 0, -1);

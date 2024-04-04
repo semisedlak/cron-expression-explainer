@@ -373,6 +373,16 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'At every minute on a weekday closest to the 15th.',
 		];
 
+		yield [
+			'* * L * *',
+			'At every minute on a last day-of-month.',
+		];
+
+		yield [
+			'* * LW * *',
+			'At every minute on a last weekday.',
+		];
+
 		/////////////////////////////////////////////////
 
 		yield [
