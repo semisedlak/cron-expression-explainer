@@ -530,6 +530,26 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'At every minute on every 2nd day-of-week from Sunday through Monday, Wednesday and from Thursday through Friday.',
 		];
 
+		yield [
+			'* * * * SUN#1',
+			'At every minute on 1st Sunday.',
+		];
+
+		yield [
+			'* * * * SUN#5',
+			'At every minute on 5th Sunday.',
+		];
+
+		yield [
+			'* * * * 7#1',
+			'At every minute on 1st Sunday.',
+		];
+
+		yield [
+			'* * * * 7#5',
+			'At every minute on 5th Sunday.',
+		];
+
 		/////////////////////////////////////////////////
 
 		yield [

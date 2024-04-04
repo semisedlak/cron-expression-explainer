@@ -3,6 +3,8 @@
 namespace Orisai\CronExpressionExplainer\Interpreter;
 
 use function assert;
+use function explode;
+use function str_contains;
 
 final class DayOfWeekInterpreter extends BasePartInterpreter
 {
@@ -29,6 +31,10 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 
 	protected function translateValue(string $value): string
 	{
+		if (str_contains($value, '#')) {
+			[$value, $nth] = explode('#', $value);
+		}
+
 		$value = $this->deduplicateValue($value);
 		$this->assertValueInRange($value);
 
@@ -41,6 +47,14 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 			5 => 'Friday',
 			6 => 'Saturday',
 		];
+
+		if (isset($nth)) {
+			$intNth = (int) $nth;
+			assert($nth === (string) $intNth);
+			assert($intNth >= 0 && $intNth <= 5);
+
+			return $nth . $this->getNumberExtension($intNth) . ' ' . $map[$value];
+		}
 
 		return $map[$value];
 	}

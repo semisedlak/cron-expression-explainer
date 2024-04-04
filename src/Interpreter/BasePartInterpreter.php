@@ -100,7 +100,7 @@ abstract class BasePartInterpreter
 
 	abstract protected function translateValue(string $value): string;
 
-	private function getNumberExtension(int $number): string
+	protected function getNumberExtension(int $number): string
 	{
 		if ($number === 1) {
 			return 'st';
