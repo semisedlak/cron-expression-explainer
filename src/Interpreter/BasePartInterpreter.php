@@ -25,6 +25,10 @@ abstract class BasePartInterpreter
 			$lastKey = array_key_last($list);
 			$string = '';
 			foreach ($list as $key => $item) {
+				if ($item instanceof ValuePart && $item->getValue() === '*') {
+					return $this->explainPart($item);
+				}
+
 				$string .= $this->explainPart($item, $key === $firstKey);
 				if ($key !== $lastKey) {
 					if (++$key === $lastKey) {

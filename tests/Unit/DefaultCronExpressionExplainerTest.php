@@ -775,6 +775,12 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'At every minute from 1 through 2 past every hour from 1 through 2 on every day-of-month from 1 through 2'
 			. ' and on every day-of-week from Monday through Tuesday in every month from January through February.',
 		];
+
+		// List containing * is the same as just *
+		yield [
+			'1,* 1,* 1,* 1,* 1,* ',
+			'At every minute.',
+		];
 	}
 
 	/**
