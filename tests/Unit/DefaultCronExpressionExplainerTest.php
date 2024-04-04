@@ -570,6 +570,16 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'At every minute on 5th Sunday.',
 		];
 
+		yield [
+			'* * * * 7L',
+			'At every minute on the last Sunday.',
+		];
+
+		yield [
+			'* * * * SUNL',
+			'At every minute on the last Sunday.',
+		];
+
 		/////////////////////////////////////////////////
 
 		yield [

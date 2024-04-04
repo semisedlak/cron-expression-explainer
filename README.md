@@ -56,4 +56,5 @@ $explainer->explain('* * * * SUN#2'); // At every minute on 2nd Sunday.
 $explainer->explain('* * 15W * *'); // At every minute on a weekday closest to the 15th.
 $explainer->explain('* * L * *'); // At every minute on a last day-of-month.
 $explainer->explain('* * LW * *'); // At every minute on a last weekday.
+$explainer->explain('* * * * 7L'); // At every minute on the last Sunday.
 ```
