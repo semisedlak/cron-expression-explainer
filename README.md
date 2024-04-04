@@ -53,4 +53,5 @@ $explainer->explain('0 8-18 * * *'); // At minute 0 past every hour from 8 throu
 $explainer->explain('0 8-18/2 * * *'); // At minute 0 past every 2nd hour from 8 through 18.
 $explainer->explain('0 8,12,16 * * *'); // At minute 0 past hour 8, 12 and 16.
 $explainer->explain('* * * * SUN#2'); // At every minute on 2nd Sunday.
+$explainer->explain('* * 15W * *'); // At every minute on a weekday closest to the 15th.
 ```

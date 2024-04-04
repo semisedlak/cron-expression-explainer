@@ -17,17 +17,12 @@ final class MonthInterpreter extends BasePartInterpreter
 		return 'month';
 	}
 
-	protected function getInValueName(): string
-	{
-		return '';
-	}
-
 	protected function getAsteriskDescription(): string
 	{
 		return '';
 	}
 
-	protected function translateValue(string $value): string
+	protected function translateValue(string $value, bool $renderName): string
 	{
 		$value = $this->deduplicateValue($value);
 		$this->assertValueInRange($value);

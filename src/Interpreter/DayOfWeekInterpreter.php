@@ -19,17 +19,12 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		return 'day-of-week';
 	}
 
-	protected function getInValueName(): string
-	{
-		return '';
-	}
-
 	protected function getAsteriskDescription(): string
 	{
 		return '';
 	}
 
-	protected function translateValue(string $value): string
+	protected function translateValue(string $value, bool $renderName): string
 	{
 		if (str_contains($value, '#')) {
 			[$value, $nth] = explode('#', $value);

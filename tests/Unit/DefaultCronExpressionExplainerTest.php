@@ -363,6 +363,16 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'At every minute on every 2nd day-of-month from 1 through 10, 15 and from 20 through 25.',
 		];
 
+		yield [
+			'* * 1W * *',
+			'At every minute on a weekday closest to the 1st.',
+		];
+
+		yield [
+			'* * 15W * *',
+			'At every minute on a weekday closest to the 15th.',
+		];
+
 		/////////////////////////////////////////////////
 
 		yield [

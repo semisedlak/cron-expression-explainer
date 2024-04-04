@@ -84,13 +84,8 @@ abstract class BasePartInterpreter
 			return $this->getAsteriskDescription();
 		}
 
-		$name = $this->getInValueName();
-
-		return ($renderName ? ($name !== '' ? "$name " : '') : '')
-			. $this->translateValue($value);
+		return $this->translateValue($value, $renderName);
 	}
-
-	abstract protected function getInValueName(): string;
 
 	abstract protected function getInRangeName(): string;
 
@@ -98,7 +93,7 @@ abstract class BasePartInterpreter
 
 	abstract protected function getAsteriskDescription(): string;
 
-	abstract protected function translateValue(string $value): string;
+	abstract protected function translateValue(string $value, bool $renderName): string;
 
 	protected function getNumberExtension(int $number): string
 	{

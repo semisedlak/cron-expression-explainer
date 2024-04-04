@@ -3,6 +3,8 @@
 namespace Orisai\CronExpressionExplainer\Interpreter;
 
 use function assert;
+use function str_ends_with;
+use function substr;
 
 final class DayOfMonthInterpreter extends BasePartInterpreter
 {
@@ -27,11 +29,22 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 		return '';
 	}
 
-	protected function translateValue(string $value): string
+	protected function translateValue(string $value, bool $renderName): string
 	{
+		$nearest = str_ends_with($value, 'W');
+		if ($nearest) {
+			$value = substr($value, 0, -1);
+			assert($value !== false);
+		}
+
 		$this->assertValueInRange($value);
 
-		return $value;
+		if ($nearest) {
+			return 'a weekday closest to the ' . $value . $this->getNumberExtension((int) $value);
+		}
+
+		return ($renderName ? ("{$this->getInValueName()} ") : '')
+			. $value;
 	}
 
 	private function assertValueInRange(string $value): void

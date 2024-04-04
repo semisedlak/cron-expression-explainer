@@ -17,7 +17,7 @@ final class HourInterpreter extends BasePartInterpreter
 		return $this->getInValueName();
 	}
 
-	protected function getInValueName(): string
+	private function getInValueName(): string
 	{
 		return 'hour';
 	}
@@ -34,11 +34,12 @@ final class HourInterpreter extends BasePartInterpreter
 		assert($intValue >= 0 && $intValue <= 23);
 	}
 
-	protected function translateValue(string $value): string
+	protected function translateValue(string $value, bool $renderName): string
 	{
 		$this->assertValueInRange($value);
 
-		return $value;
+		return ($renderName ? "{$this->getInValueName()} " : '')
+			. $value;
 	}
 
 }
