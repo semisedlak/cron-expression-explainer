@@ -110,7 +110,13 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 				. ':'
 				. str_pad($minutePartValue, 2, '0', STR_PAD_LEFT);
 		} else {
-			if (!($repeatSeconds > 0 && $minutePart instanceof ValuePart && $minutePart->getValue() === '*')) {
+			if (
+				!(
+					$repeatSeconds > 0
+					&& $minutePart instanceof ValuePart
+					&& $this->minuteInterpreter->isAll($minutePart)
+				)
+			) {
 				if ($secondsExplanation !== '') {
 					$explanation .= ' at ';
 				}
@@ -135,7 +141,7 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 		if (
 			$dayOfMonthExplanation !== ''
 			&& $dayOfWeekPart instanceof ValuePart
-			&& $dayOfWeekPart->getValue() !== '*'
+			&& !$this->dayOfWeekInterpreter->isAll($dayOfWeekPart)
 		) {
 			$explanation .= 'every ';
 		}

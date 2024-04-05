@@ -25,7 +25,7 @@ abstract class BasePartInterpreter
 			$lastKey = array_key_last($list);
 			$string = '';
 			foreach ($list as $key => $item) {
-				if ($item instanceof ValuePart && $item->getValue() === '*') {
+				if ($item instanceof ValuePart && $this->isAll($item)) {
 					return $this->explainPart($item);
 				}
 
@@ -51,7 +51,7 @@ abstract class BasePartInterpreter
 				return $this->explainPart($range);
 			}
 
-			if ($range instanceof ValuePart && $range->getValue() === '*') {
+			if ($range instanceof ValuePart && $this->isAll($range)) {
 				return 'every '
 					. $step
 					. $this->getNumberExtension($step)
@@ -78,14 +78,14 @@ abstract class BasePartInterpreter
 
 		assert($part instanceof ValuePart);
 
-		$value = $part->getValue();
-
-		if ($value === '*') {
+		if ($this->isAll($part)) {
 			return $this->getAsteriskDescription();
 		}
 
-		return $this->translateValue($value, $renderName);
+		return $this->translateValue($part->getValue(), $renderName);
 	}
+
+	abstract public function isAll(ValuePart $part): bool;
 
 	abstract protected function getInRangeName(): string;
 

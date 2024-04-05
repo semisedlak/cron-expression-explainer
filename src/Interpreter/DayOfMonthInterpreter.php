@@ -2,12 +2,19 @@
 
 namespace Orisai\CronExpressionExplainer\Interpreter;
 
+use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function assert;
+use function in_array;
 use function str_ends_with;
 use function substr;
 
 final class DayOfMonthInterpreter extends BasePartInterpreter
 {
+
+	public function isAll(ValuePart $part): bool
+	{
+		return in_array($part->getValue(), ['*', '?'], true);
+	}
 
 	protected function getInStepName(): string
 	{

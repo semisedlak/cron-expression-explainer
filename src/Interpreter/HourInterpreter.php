@@ -2,10 +2,16 @@
 
 namespace Orisai\CronExpressionExplainer\Interpreter;
 
+use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function assert;
 
 final class HourInterpreter extends BasePartInterpreter
 {
+
+	public function isAll(ValuePart $part): bool
+	{
+		return $part->getValue() === '*';
+	}
 
 	protected function getInStepName(): string
 	{

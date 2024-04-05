@@ -383,6 +383,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'At every minute on a last weekday.',
 		];
 
+		yield [
+			'* * ? * *',
+			'At every minute.',
+		];
+
 		/////////////////////////////////////////////////
 
 		yield [
@@ -578,6 +583,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		yield [
 			'* * * * SUNL',
 			'At every minute on the last Sunday.',
+		];
+
+		yield [
+			'* * * * ?',
+			'At every minute.',
 		];
 
 		/////////////////////////////////////////////////
