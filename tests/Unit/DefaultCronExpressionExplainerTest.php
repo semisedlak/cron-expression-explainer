@@ -2,6 +2,7 @@
 
 namespace Tests\Orisai\CronExpressionExplainer\Unit;
 
+use Cron\DayOfMonthField;
 use DateTimeZone;
 use Generator;
 use Orisai\CronExpressionExplainer\DefaultCronExpressionExplainer;
@@ -476,6 +477,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
+			'* * * * MON,2,WED',
+			'At every minute on Monday, Tuesday and Wednesday.',
+		];
+
+		yield [
 			'* * * * 0-6',
 			'At every minute on every day-of-week from Sunday through Saturday.',
 		];
@@ -486,8 +492,8 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
-			'* * * * 1-6',
-			'At every minute on every day-of-week from Monday through Saturday.',
+			'* * * * SUN-6',
+			'At every minute on every day-of-week from Sunday through Saturday.',
 		];
 
 		yield [
@@ -588,6 +594,56 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		yield [
 			'* * * * ?',
 			'At every minute.',
+		];
+
+		yield [
+			'* * * * 7L,4',
+			'At every minute on the last Sunday and Thursday.',
+		];
+
+		yield [
+			'* * * * 7L,4L',
+			'At every minute on the last Sunday and the last Thursday.',
+		];
+
+		// Impossible?
+		yield [
+			'* * * * 7L-4',
+			'At every minute on every day-of-week from the last Sunday through Thursday.',
+		];
+
+		// Impossible?
+		yield [
+			'* * * * 7L-4L',
+			'At every minute on every day-of-week from the last Sunday through the last Thursday.',
+		];
+
+		yield [
+			'* * * * 7#5,3',
+			'At every minute on 5th Sunday and Wednesday.',
+		];
+
+		// Impossible?
+		yield [
+			'* * * * 7#5-3',
+			'At every minute on every day-of-week from 5th Sunday through Wednesday.',
+		];
+
+		// Impossible?
+		yield [
+			'* * * * 3-7#5',
+			'At every minute on every day-of-week from Wednesday through 5th Sunday.',
+		];
+
+		yield [
+			'* * * * 7#5,3#3',
+			'At every minute on 5th Sunday and 3rd Wednesday.',
+		];
+
+		// Impossible?
+		yield [
+			'* * * * 3#3-7#5',
+			'At every minute on every day-of-week from 3rd Wednesday through 5th Sunday.',
 		];
 
 		/////////////////////////////////////////////////
@@ -895,6 +951,17 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		//	*-1 *-1 *-1 *-1 *-1
 		//	1-*/1 1-*/1 1-*/1 1-*/1 1-*/1
 		//	*-1/1 *-1/1 *-1/1 *-1/1 *-1/1
+
+		// Are impossible and not officially supported
+		//	* * * * 7L/2
+		//	* * * * 7#5/2
+
+		// Perhaps possible, but are not supported
+		/** @see DayOfMonthField */
+		//	* * 1W-2W * *'
+		//	* * 3W-15 * *'
+		//	* * 4-L * *'
+		//	* * 15W-LW * *'
 	}
 
 	/**
