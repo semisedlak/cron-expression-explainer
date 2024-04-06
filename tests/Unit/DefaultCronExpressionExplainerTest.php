@@ -14,7 +14,14 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 {
 
 	/**
-	 * @dataProvider provideExplain
+	 * @dataProvider provideExplainMinutes
+	 * @dataProvider provideExplainHours
+	 * @dataProvider provideExplainHoursAndMinutes
+	 * @dataProvider provideExplainDaysOfMonth
+	 * @dataProvider provideExplainDaysOfWeek
+	 * @dataProvider provideExplainMonths
+	 * @dataProvider provideExplainAllValuesCombinations
+	 * @dataProvider provideExplainOthers
 	 */
 	public function testExplain(string $expression, string $explanation): void
 	{
@@ -26,7 +33,7 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		);
 	}
 
-	public function provideExplain(): Generator
+	public function provideExplainMinutes(): Generator
 	{
 		yield [
 			'* * * * *',
@@ -137,9 +144,10 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'1-10/2,15,20-25 * * * *',
 			'At every 2nd minute from 1 through 10, 15 and from 20 through 25.',
 		];
+	}
 
-		/////////////////////////////////////////////////
-
+	public function provideExplainHours(): Generator
+	{
 		yield [
 			'* 0 * * *',
 			'At every minute past hour 0.',
@@ -244,9 +252,10 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'* 1-5/2,10,15-20 * * *',
 			'At every minute past every 2nd hour from 1 through 5, 10 and from 15 through 20.',
 		];
+	}
 
-		/////////////////////////////////////////////////
-
+	public function provideExplainHoursAndMinutes(): Generator
+	{
 		yield [
 			'@daily',
 			'At 00:00.',
@@ -276,14 +285,10 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'01 02 * * *',
 			'At 02:01.',
 		];
+	}
 
-		/////////////////////////////////////////////////
-
-		yield [
-			'@monthly',
-			'At 00:00 on day-of-month 1.',
-		];
-
+	public function provideExplainDaysOfMonth(): Generator
+	{
 		yield [
 			'* * 1 * *',
 			'At every minute on day-of-month 1.',
@@ -408,9 +413,10 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'* * ? * *',
 			'At every minute.',
 		];
+	}
 
-		/////////////////////////////////////////////////
-
+	public function provideExplainDaysOfWeek(): Generator
+	{
 		yield [
 			'* * * * 0',
 			'At every minute on Sunday.',
@@ -680,9 +686,10 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'* * * * 3#3-7#5',
 			'At every minute on every day-of-week from 3rd Wednesday through 5th Sunday.',
 		];
+	}
 
-		/////////////////////////////////////////////////
-
+	public function provideExplainMonths(): Generator
+	{
 		yield [
 			'* * * 1 *',
 			'At every minute in January.',
@@ -902,49 +909,10 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'* * * 1-2/2,3,4-5 *',
 			'At every minute in every 2nd month from January through February, March and from April through May.',
 		];
+	}
 
-		/////////////////////////////////////////////////
-
-		yield [
-			'0-59 0-23 1-31 1-12 0-6',
-			'At every minute from 0 through 59 past every hour from 0 through 23 on every day-of-month from 1 through 31'
-			. ' and on every day-of-week from Sunday through Saturday in every month from January through December.',
-		];
-
-		yield [
-			'@weekly',
-			'At 00:00 on Sunday.',
-		];
-
-		yield [
-			'@annually',
-			'At 00:00 on day-of-month 1 in January.',
-		];
-
-		yield [
-			'@yearly',
-			'At 00:00 on day-of-month 1 in January.',
-		];
-
-		yield [
-			'* * 1 * 1',
-			'At every minute on day-of-month 1 and on every Monday.',
-		];
-
-		yield [
-			'1 1 1 1 1',
-			'At 01:01 on day-of-month 1 and on every Monday in January.',
-		];
-
-		yield [
-			'1-2 1-2 1-2 1-2 1-2',
-			'At every minute from 1 through 2 past every hour from 1 through 2 on every day-of-month from 1 through 2'
-			. ' and on every day-of-week from Monday through Tuesday in every month from January through February.',
-		];
-
-		/////////////////////////////////////////////////
-		// Should be invalid, but work
-
+	public function provideExplainAllValuesCombinations(): Generator
+	{
 		yield [
 			'1,* 1,* 1,* 1,* 1,*',
 			'At every minute.',
@@ -993,6 +961,51 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		yield [
 			'* * ?-1/1 * ?-1/1',
 			'At every minute.',
+		];
+	}
+
+	public function provideExplainOthers(): Generator
+	{
+		yield [
+			'0-59 0-23 1-31 1-12 0-6',
+			'At every minute from 0 through 59 past every hour from 0 through 23 on every day-of-month from 1 through 31'
+			. ' and on every day-of-week from Sunday through Saturday in every month from January through December.',
+		];
+
+		yield [
+			'@weekly',
+			'At 00:00 on Sunday.',
+		];
+
+		yield [
+			'@monthly',
+			'At 00:00 on day-of-month 1.',
+		];
+
+		yield [
+			'@annually',
+			'At 00:00 on day-of-month 1 in January.',
+		];
+
+		yield [
+			'@yearly',
+			'At 00:00 on day-of-month 1 in January.',
+		];
+
+		yield [
+			'* * 1 * 1',
+			'At every minute on day-of-month 1 and on every Monday.',
+		];
+
+		yield [
+			'1 1 1 1 1',
+			'At 01:01 on day-of-month 1 and on every Monday in January.',
+		];
+
+		yield [
+			'1-2 1-2 1-2 1-2 1-2',
+			'At every minute from 1 through 2 past every hour from 1 through 2 on every day-of-month from 1 through 2'
+			. ' and on every day-of-week from Monday through Tuesday in every month from January through February.',
 		];
 
 		// Are invalid
