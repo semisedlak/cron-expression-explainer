@@ -9,7 +9,6 @@ use Orisai\CronExpressionExplainer\Part\StepPart;
 use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function array_key_first;
 use function array_key_last;
-use function assert;
 
 /**
  * @internal
@@ -17,18 +16,19 @@ use function assert;
 abstract class BasePartInterpreter
 {
 
+	/**
+	 * @param ListPart|StepPart|RangePart|ValuePart $part
+	 */
 	public function explainPart(Part $part, bool $renderName = true): string
 	{
+		$part = $this->reducePart($part);
+
 		if ($part instanceof ListPart) {
 			$list = $part->getParts();
 			$firstKey = array_key_first($list);
 			$lastKey = array_key_last($list);
 			$string = '';
 			foreach ($list as $key => $item) {
-				if ($item instanceof ValuePart && $this->isAll($item)) {
-					return $this->explainPart($item);
-				}
-
 				$string .= $this->explainPart($item, $key === $firstKey);
 				if ($key !== $lastKey) {
 					if (++$key === $lastKey) {
@@ -45,11 +45,6 @@ abstract class BasePartInterpreter
 		if ($part instanceof StepPart) {
 			$range = $part->getRange();
 			$step = $part->getStep();
-
-			// Range with step === 1 is the same as range without step
-			if ($step === 1) {
-				return $this->explainPart($range);
-			}
 
 			if ($range instanceof ValuePart && $this->isAll($range)) {
 				return 'every '
@@ -76,13 +71,71 @@ abstract class BasePartInterpreter
 				. $this->explainPart($right, false);
 		}
 
-		assert($part instanceof ValuePart);
-
 		if ($this->isAll($part)) {
 			return $this->getAsteriskDescription();
 		}
 
 		return $this->translateValue($part->getValue(), $renderName);
+	}
+
+	/**
+	 * @param ListPart|StepPart|RangePart|ValuePart $part
+	 * @return ListPart|StepPart|RangePart|ValuePart
+	 */
+	private function reducePart(Part $part): Part
+	{
+		if ($part instanceof ListPart) {
+			$items = $part->getParts();
+			$reducedItems = [];
+			foreach ($part->getParts() as $item) {
+				$reducedItem = $this->reduceUnlistedPart($item);
+				$reducedItems[] = $this->reduceUnlistedPart($item);
+
+				if ($reducedItem instanceof ValuePart && $this->isAll($reducedItem)) {
+					return $reducedItem;
+				}
+			}
+
+			if ($reducedItems !== $items) {
+				return $this->reducePart(new ListPart($reducedItems));
+			}
+
+			return $part;
+		}
+
+		return $this->reduceUnlistedPart($part);
+	}
+
+	/**
+	 * @param StepPart|RangePart|ValuePart $part
+	 * @return StepPart|RangePart|ValuePart
+	 */
+	private function reduceUnlistedPart(Part $part): Part
+	{
+		if ($part instanceof StepPart) {
+			// Range with step === 1 is the same as range without step
+			if ($part->getStep() === 1) {
+				return $this->reduceUnlistedPart($part->getRange());
+			}
+
+			return $part;
+		}
+
+		if ($part instanceof RangePart) {
+			$left = $part->getLeft();
+			if ($this->isAll($left)) {
+				return $left;
+			}
+
+			$right = $part->getRight();
+			if ($this->isAll($right)) {
+				return $right;
+			}
+
+			return $part;
+		}
+
+		return $part;
 	}
 
 	abstract public function isAll(ValuePart $part): bool;

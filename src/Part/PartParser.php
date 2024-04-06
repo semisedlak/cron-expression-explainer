@@ -9,6 +9,9 @@ use function str_contains;
 final class PartParser
 {
 
+	/**
+	 * @return ListPart|StepPart|RangePart|ValuePart
+	 */
 	public function parsePart(string $part): Part
 	{
 		if (str_contains($part, ',')) {

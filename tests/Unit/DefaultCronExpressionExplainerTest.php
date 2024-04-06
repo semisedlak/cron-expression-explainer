@@ -836,11 +836,65 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			. ' and on every day-of-week from Monday through Tuesday in every month from January through February.',
 		];
 
-		// List containing * is the same as just *
+		/////////////////////////////////////////////////
+		// Should be invalid, but work
+
 		yield [
-			'1,* 1,* 1,* 1,* 1,* ',
+			'1,* 1,* 1,* 1,* 1,*',
 			'At every minute.',
 		];
+
+		yield [
+			'*,1 *,1 *,1 *,1 *,1',
+			'At every minute.',
+		];
+
+		yield [
+			'1,*/1 1,*/1 1,*/1 1,*/1 1,*/1',
+			'At every minute.',
+		];
+
+		yield [
+			'* * 1,? * 1,?',
+			'At every minute.',
+		];
+
+		yield [
+			'* * ?,1 * ?,1',
+			'At every minute.',
+		];
+
+		yield [
+			'* * 1,?/1 * 1,?/1',
+			'At every minute.',
+		];
+
+		yield [
+			'* * 1-? * 1-?',
+			'At every minute.',
+		];
+
+		yield [
+			'* * ?-1 * ?-1',
+			'At every minute.',
+		];
+
+		yield [
+			'* * 1-?/1 * 1-?/1',
+			'At every minute.',
+		];
+
+		yield [
+			'* * ?-1/1 * ?-1/1',
+			'At every minute.',
+		];
+
+		// Are invalid
+		//	*,1/1 *,1/1 *,1/1 *,1/1 *,1/1
+		//	1-* 1-* 1-* 1-* 1-*
+		//	*-1 *-1 *-1 *-1 *-1
+		//	1-*/1 1-*/1 1-*/1 1-*/1 1-*/1
+		//	*-1/1 *-1/1 *-1/1 *-1/1 *-1/1
 	}
 
 	/**
