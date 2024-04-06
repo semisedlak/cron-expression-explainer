@@ -5,6 +5,7 @@ namespace Orisai\CronExpressionExplainer\Interpreter;
 use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function assert;
 use function is_numeric;
+use function strtoupper;
 
 final class MonthInterpreter extends BasePartInterpreter
 {
@@ -69,7 +70,7 @@ final class MonthInterpreter extends BasePartInterpreter
 			'DEC' => '12',
 		];
 
-		return $map[$value] ?? $value;
+		return $map[strtoupper($value)] ?? $value;
 	}
 
 	private function convertNumericValue(string $value): int

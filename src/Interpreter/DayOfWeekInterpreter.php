@@ -9,6 +9,7 @@ use function in_array;
 use function is_numeric;
 use function str_contains;
 use function str_ends_with;
+use function strtoupper;
 use function substr;
 
 final class DayOfWeekInterpreter extends BasePartInterpreter
@@ -88,7 +89,7 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 			'SAT' => '6',
 		];
 
-		return $map[$value] ?? $value;
+		return $map[strtoupper($value)] ?? $value;
 	}
 
 	private function convertNumericValue(string $value): int

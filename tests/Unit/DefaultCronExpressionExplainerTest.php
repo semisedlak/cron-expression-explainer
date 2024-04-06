@@ -432,6 +432,16 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
+			'* * * * sun',
+			'At every minute on Sunday.',
+		];
+
+		yield [
+			'* * * * Sun',
+			'At every minute on Sunday.',
+		];
+
+		yield [
 			'* * * * 1',
 			'At every minute on Monday.',
 		];
@@ -685,6 +695,16 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 
 		yield [
 			'* * * JAN *',
+			'At every minute in January.',
+		];
+
+		yield [
+			'* * * jan *',
+			'At every minute in January.',
+		];
+
+		yield [
+			'* * * Jan *',
 			'At every minute in January.',
 		];
 
