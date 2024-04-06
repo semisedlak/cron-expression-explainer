@@ -4,6 +4,7 @@ namespace Orisai\CronExpressionExplainer\Interpreter;
 
 use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function assert;
+use function is_numeric;
 
 final class MinuteInterpreter extends BasePartInterpreter
 {
@@ -33,19 +34,20 @@ final class MinuteInterpreter extends BasePartInterpreter
 		return 'every minute';
 	}
 
-	public function assertValueInRange(string $value): void
+	public function convertNumericValue(string $value): int
 	{
+		assert(is_numeric($value));
 		$intValue = (int) $value;
-		assert($value === (string) $intValue);
+		assert((float) $value === (float) $intValue);
 		assert($intValue >= 0 && $intValue <= 59);
+
+		return $intValue;
 	}
 
 	protected function translateValue(string $value, bool $renderName): string
 	{
-		$this->assertValueInRange($value);
-
 		return ($renderName ? "{$this->getInValueName()} " : '')
-			. $value;
+			. $this->convertNumericValue($value);
 	}
 
 }

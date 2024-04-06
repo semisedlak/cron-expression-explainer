@@ -6,6 +6,7 @@ use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function assert;
 use function explode;
 use function in_array;
+use function is_numeric;
 use function str_contains;
 use function str_ends_with;
 use function substr;
@@ -47,7 +48,7 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		}
 
 		$value = $this->deduplicateValue($value);
-		$this->assertValueInRange($value);
+		$intValue = $this->convertNumericValue($value);
 
 		$map = [
 			0 => 'Sunday',
@@ -64,14 +65,14 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 			assert($nth === (string) $intNth);
 			assert($intNth >= 0 && $intNth <= 5);
 
-			return $nth . $this->getNumberExtension($intNth) . ' ' . $map[$value];
+			return $nth . $this->getNumberExtension($intNth) . ' ' . $map[$intValue];
 		}
 
 		if ($last) {
-			return 'the last ' . $map[$value];
+			return 'the last ' . $map[$intValue];
 		}
 
-		return $map[$value];
+		return $map[$intValue];
 	}
 
 	private function deduplicateValue(string $value): string
@@ -90,11 +91,14 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		return $map[$value] ?? $value;
 	}
 
-	private function assertValueInRange(string $value): void
+	private function convertNumericValue(string $value): int
 	{
+		assert(is_numeric($value));
 		$intValue = (int) $value;
-		assert($value === (string) $intValue);
+		assert((float) $value === (float) $intValue);
 		assert($intValue >= 0 && $intValue <= 6);
+
+		return $intValue;
 	}
 
 }

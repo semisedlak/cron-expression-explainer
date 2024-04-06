@@ -5,6 +5,7 @@ namespace Orisai\CronExpressionExplainer\Interpreter;
 use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function assert;
 use function in_array;
+use function is_numeric;
 use function str_ends_with;
 use function substr;
 
@@ -52,21 +53,24 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 			assert($value !== false);
 		}
 
-		$this->assertValueInRange($value);
+		$intValue = $this->convertNumericValue($value);
 
 		if ($nearest) {
-			return 'a weekday closest to the ' . $value . $this->getNumberExtension((int) $value);
+			return 'a weekday closest to the ' . $value . $this->getNumberExtension($intValue);
 		}
 
 		return ($renderName ? ("{$this->getInValueName()} ") : '')
-			. $value;
+			. $intValue;
 	}
 
-	private function assertValueInRange(string $value): void
+	private function convertNumericValue(string $value): int
 	{
+		assert(is_numeric($value));
 		$intValue = (int) $value;
-		assert($value === (string) $intValue);
+		assert((float) $value === (float) $intValue);
 		assert($intValue >= 1 && $intValue <= 31);
+
+		return $intValue;
 	}
 
 }

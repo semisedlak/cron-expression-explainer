@@ -4,6 +4,7 @@ namespace Orisai\CronExpressionExplainer\Interpreter;
 
 use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function assert;
+use function is_numeric;
 
 final class MonthInterpreter extends BasePartInterpreter
 {
@@ -31,7 +32,7 @@ final class MonthInterpreter extends BasePartInterpreter
 	protected function translateValue(string $value, bool $renderName): string
 	{
 		$value = $this->deduplicateValue($value);
-		$this->assertValueInRange($value);
+		$intValue = $this->convertNumericValue($value);
 
 		$map = [
 			1 => 'January',
@@ -48,7 +49,7 @@ final class MonthInterpreter extends BasePartInterpreter
 			12 => 'December',
 		];
 
-		return $map[$value];
+		return $map[$intValue];
 	}
 
 	private function deduplicateValue(string $value): string
@@ -71,11 +72,14 @@ final class MonthInterpreter extends BasePartInterpreter
 		return $map[$value] ?? $value;
 	}
 
-	private function assertValueInRange(string $value): void
+	private function convertNumericValue(string $value): int
 	{
+		assert(is_numeric($value));
 		$intValue = (int) $value;
-		assert($value === (string) $intValue);
+		assert((float) $value === (float) $intValue);
 		assert($intValue >= 1 && $intValue <= 12);
+
+		return $intValue;
 	}
 
 }

@@ -103,8 +103,8 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 				$explanation .= ' at ';
 			}
 
-			$this->hourInterpreter->assertValueInRange($hourPartValue);
-			$this->minuteInterpreter->assertValueInRange($minutePartValue);
+			$this->hourInterpreter->convertNumericValue($hourPartValue);
+			$this->minuteInterpreter->convertNumericValue($minutePartValue);
 
 			$explanation .= str_pad($hourPartValue, 2, '0', STR_PAD_LEFT)
 				. ':'

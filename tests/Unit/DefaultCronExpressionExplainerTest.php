@@ -44,6 +44,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
+			'01 * * * *',
+			'At minute 1.',
+		];
+
+		yield [
 			'@hourly',
 			'At minute 0.',
 		];
@@ -143,6 +148,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		yield [
 			'* 23 * * *',
 			'At every minute past hour 23.',
+		];
+
+		yield [
+			'* 01 * * *',
+			'At every minute past hour 1.',
 		];
 
 		yield [
@@ -262,6 +272,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'At 10:00.',
 		];
 
+		yield [
+			'01 02 * * *',
+			'At 02:01.',
+		];
+
 		/////////////////////////////////////////////////
 
 		yield [
@@ -277,6 +292,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		yield [
 			'* * 31 * *',
 			'At every minute on day-of-month 31.',
+		];
+
+		yield [
+			'* * 01 * *',
+			'At every minute on day-of-month 1.',
 		];
 
 		yield [
@@ -393,6 +413,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 
 		yield [
 			'* * * * 0',
+			'At every minute on Sunday.',
+		];
+
+		yield [
+			'* * * * 00',
 			'At every minute on Sunday.',
 		];
 
@@ -650,6 +675,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 
 		yield [
 			'* * * 1 *',
+			'At every minute in January.',
+		];
+
+		yield [
+			'* * * 01 *',
 			'At every minute in January.',
 		];
 
