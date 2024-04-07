@@ -133,28 +133,43 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 			$explanation .= $hourExplanation !== '' ? ' past ' . $hourExplanation : '';
 		}
 
-		$dayOfMonthExplanation = $this->dayOfMonthInterpreter->explainPart($dayOfMonthPart);
 		$dayOfWeekExplanation = $this->dayOfWeekInterpreter->explainPart($dayOfWeekPart);
-
-		$explanation .= $dayOfMonthExplanation !== '' ? ' on ' . $dayOfMonthExplanation : '';
-
-		if ($dayOfMonthExplanation !== '' && $dayOfWeekExplanation !== '') {
-			$explanation .= ' and';
-		}
-
-		$explanation .= $dayOfWeekExplanation !== '' ? ' on ' : '';
 		if (
-			$dayOfMonthExplanation !== ''
-			&& $dayOfWeekPart instanceof ValuePart
-			&& !$this->dayOfWeekInterpreter->isAll($dayOfWeekPart)
+			$dayOfWeekExplanation === ''
+			&& $dayOfMonthPart instanceof ValuePart
+			&& $monthPart instanceof ValuePart
+			&& is_numeric($dayOfMonthPart->getValue())
+			&& is_numeric($monthPart->getValue())
 		) {
-			$explanation .= 'every ';
+			$dayOfMonthValue = $this->dayOfMonthInterpreter->convertNumericValue($dayOfMonthPart->getValue());
+			$explanation .= ' on '
+				. $dayOfMonthValue
+				. $this->dayOfMonthInterpreter->getNumberExtension($dayOfMonthValue)
+				. ' of '
+				. $this->monthInterpreter->explainPart($monthPart);
+		} else {
+			$dayOfMonthExplanation = $this->dayOfMonthInterpreter->explainPart($dayOfMonthPart);
+
+			$explanation .= $dayOfMonthExplanation !== '' ? ' on ' . $dayOfMonthExplanation : '';
+
+			if ($dayOfMonthExplanation !== '' && $dayOfWeekExplanation !== '') {
+				$explanation .= ' and';
+			}
+
+			$explanation .= $dayOfWeekExplanation !== '' ? ' on ' : '';
+			if (
+				$dayOfMonthExplanation !== ''
+				&& $dayOfWeekPart instanceof ValuePart
+				&& !$this->dayOfWeekInterpreter->isAll($dayOfWeekPart)
+			) {
+				$explanation .= 'every ';
+			}
+
+			$explanation .= $dayOfWeekExplanation;
+
+			$monthExplanation = $this->monthInterpreter->explainPart($monthPart);
+			$explanation .= $monthExplanation !== '' ? ' in ' . $monthExplanation : '';
 		}
-
-		$explanation .= $dayOfWeekExplanation;
-
-		$monthExplanation = $this->monthInterpreter->explainPart($monthPart);
-		$explanation .= $monthExplanation !== '' ? ' in ' . $monthExplanation : '';
 
 		if ($timeZone !== null) {
 			$explanation .= " in {$timeZone->getName()} time zone";

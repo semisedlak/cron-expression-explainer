@@ -86,8 +86,8 @@ abstract class BasePartInterpreter
 			$items = $part->getParts();
 			$reducedItems = [];
 			foreach ($part->getParts() as $item) {
-				$reducedItem = $this->reduceUnlistedPart($item);
-				$reducedItems[] = $this->reduceUnlistedPart($item);
+				$reducedItem = $this->reduceNonListPart($item);
+				$reducedItems[] = $this->reduceNonListPart($item);
 
 				if ($reducedItem instanceof ValuePart && $this->isAll($reducedItem)) {
 					return $reducedItem;
@@ -101,42 +101,69 @@ abstract class BasePartInterpreter
 			return $part;
 		}
 
-		return $this->reduceUnlistedPart($part);
+		return $this->reduceNonListPart($part);
 	}
 
 	/**
 	 * @param StepPart|RangePart|ValuePart $part
 	 * @return StepPart|RangePart|ValuePart
 	 */
-	private function reduceUnlistedPart(Part $part): Part
+	private function reduceNonListPart(Part $part): Part
 	{
 		if ($part instanceof StepPart) {
 			// Range with step === 1 is the same as range without step
 			if ($part->getStep() === 1) {
-				return $this->reduceUnlistedPart($part->getRange());
+				return $this->reduceNonStepPart($part->getRange());
+			}
+
+			$range = $part->getRange();
+			$reducedRange = $this->reduceNonStepPart($range);
+			if ($reducedRange !== $range) {
+				return new StepPart($reducedRange, $part->getStep());
 			}
 
 			return $part;
 		}
 
+		return $this->reduceNonStepPart($part);
+	}
+
+	/**
+	 * @param RangePart|ValuePart $part
+	 * @return RangePart|ValuePart
+	 */
+	private function reduceNonStepPart(Part $part): Part
+	{
 		if ($part instanceof RangePart) {
 			$left = $part->getLeft();
-			if ($this->isAll($left)) {
-				return $left;
+			$reducedLeft = $this->reduceValuePart($left);
+			if ($this->isAll($reducedLeft)) {
+				// Reduced part is not technically required here because expressions like 1-* are not valid,
+				// but we need to do reduction later anyway
+				return $reducedLeft;
 			}
 
 			$right = $part->getRight();
-			if ($this->isAll($right)) {
-				return $right;
+			$reducedRight = $this->reduceValuePart($right);
+			if ($this->isAll($reducedRight)) {
+				// Reduced part is not technically required here because expressions like 1-* are not valid,
+				// but we need to do reduction later anyway
+				return $reducedRight;
+			}
+
+			if ($reducedLeft !== $left || $reducedRight !== $right) {
+				return new RangePart($reducedLeft, $reducedRight);
 			}
 
 			return $part;
 		}
 
-		return $part;
+		return $this->reduceValuePart($part);
 	}
 
 	abstract public function isAll(ValuePart $part): bool;
+
+	abstract public function reduceValuePart(ValuePart $part): ValuePart;
 
 	abstract protected function getInRangeName(): string;
 
@@ -146,7 +173,7 @@ abstract class BasePartInterpreter
 
 	abstract protected function translateValue(string $value, bool $renderName): string;
 
-	protected function getNumberExtension(int $number): string
+	public function getNumberExtension(int $number): string
 	{
 		if ($number === 1) {
 			return 'st';

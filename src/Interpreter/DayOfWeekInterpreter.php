@@ -15,9 +15,32 @@ use function substr;
 final class DayOfWeekInterpreter extends BasePartInterpreter
 {
 
+	private const Duplicates = [
+		7 => '0',
+		'SUN' => '0',
+		'MON' => '1',
+		'TUE' => '2',
+		'WED' => '3',
+		'THU' => '4',
+		'FRI' => '5',
+		'SAT' => '6',
+	];
+
 	public function isAll(ValuePart $part): bool
 	{
 		return in_array($part->getValue(), ['*', '?'], true);
+	}
+
+	public function reduceValuePart(ValuePart $part): ValuePart
+	{
+		$value = strtoupper($part->getValue());
+
+		$deduplicated = self::Duplicates[$value] ?? null;
+		if ($deduplicated !== null) {
+			return new ValuePart($deduplicated);
+		}
+
+		return $part;
 	}
 
 	protected function getInStepName(): string
@@ -78,18 +101,7 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 
 	private function deduplicateValue(string $value): string
 	{
-		$map = [
-			7 => '0',
-			'SUN' => '0',
-			'MON' => '1',
-			'TUE' => '2',
-			'WED' => '3',
-			'THU' => '4',
-			'FRI' => '5',
-			'SAT' => '6',
-		];
-
-		return $map[strtoupper($value)] ?? $value;
+		return self::Duplicates[strtoupper($value)] ?? $value;
 	}
 
 	private function convertNumericValue(string $value): int

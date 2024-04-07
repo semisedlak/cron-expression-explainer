@@ -20,6 +20,7 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 	 * @dataProvider provideExplainDaysOfMonth
 	 * @dataProvider provideExplainDaysOfWeek
 	 * @dataProvider provideExplainMonths
+	 * @dataProvider provideExplainDayOfMonthAndMonth
 	 * @dataProvider provideExplainAllValuesCombinations
 	 * @dataProvider provideExplainOthers
 	 */
@@ -901,6 +902,21 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
+			'* * * JAN-DEC/2 *',
+			'At every minute in every 2nd month from January through December.',
+		];
+
+		yield [
+			'* * * JAN-12/2 *',
+			'At every minute in every 2nd month from January through December.',
+		];
+
+		yield [
+			'* * * 1-DEC/2 *',
+			'At every minute in every 2nd month from January through December.',
+		];
+
+		yield [
 			'* * * 1-2/2,4 *',
 			'At every minute in every 2nd month from January through February and April.',
 		];
@@ -913,6 +929,29 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		yield [
 			'* * * 1-2/2,3,4-5 *',
 			'At every minute in every 2nd month from January through February, March and from April through May.',
+		];
+	}
+
+	public function provideExplainDayOfMonthAndMonth(): Generator
+	{
+		yield [
+			'* * 1 2 *',
+			'At every minute on 1st of February.',
+		];
+
+		yield [
+			'* * 2 2 *',
+			'At every minute on 2nd of February.',
+		];
+
+		yield [
+			'* * 3 2 *',
+			'At every minute on 3rd of February.',
+		];
+
+		yield [
+			'* * 3 FEB *',
+			'At every minute on 3rd of February.',
 		];
 	}
 
@@ -989,17 +1028,27 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 
 		yield [
 			'@annually',
-			'At 00:00 on day-of-month 1 in January.',
+			'At 00:00 on 1st of January.',
 		];
 
 		yield [
 			'@yearly',
-			'At 00:00 on day-of-month 1 in January.',
+			'At 00:00 on 1st of January.',
+		];
+
+		yield [
+			'30 10 1 2 *',
+			'At 10:30 on 1st of February.',
 		];
 
 		yield [
 			'* * 1 * 1',
 			'At every minute on day-of-month 1 and on every Monday.',
+		];
+
+		yield [
+			'* * 1 2 5',
+			'At every minute on day-of-month 1 and on every Friday in February.',
 		];
 
 		yield [

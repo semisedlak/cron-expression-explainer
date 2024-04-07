@@ -14,6 +14,11 @@ final class HourInterpreter extends BasePartInterpreter
 		return $part->getValue() === '*';
 	}
 
+	public function reduceValuePart(ValuePart $part): ValuePart
+	{
+		return $part;
+	}
+
 	protected function getInStepName(): string
 	{
 		return $this->getInValueName();

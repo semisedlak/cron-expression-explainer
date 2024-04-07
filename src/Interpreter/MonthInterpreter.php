@@ -10,9 +10,36 @@ use function strtoupper;
 final class MonthInterpreter extends BasePartInterpreter
 {
 
+	private const Duplicates = [
+		'JAN' => '1',
+		'FEB' => '2',
+		'MAR' => '3',
+		'APR' => '4',
+		'MAY' => '5',
+		'JUN' => '6',
+		'JUL' => '7',
+		'AUG' => '8',
+		'SEP' => '9',
+		'OCT' => '10',
+		'NOV' => '11',
+		'DEC' => '12',
+	];
+
 	public function isAll(ValuePart $part): bool
 	{
 		return $part->getValue() === '*';
+	}
+
+	public function reduceValuePart(ValuePart $part): ValuePart
+	{
+		$value = strtoupper($part->getValue());
+
+		$deduplicated = self::Duplicates[$value] ?? null;
+		if ($deduplicated !== null) {
+			return new ValuePart($deduplicated);
+		}
+
+		return $part;
 	}
 
 	protected function getInStepName(): string
@@ -32,7 +59,6 @@ final class MonthInterpreter extends BasePartInterpreter
 
 	protected function translateValue(string $value, bool $renderName): string
 	{
-		$value = $this->deduplicateValue($value);
 		$intValue = $this->convertNumericValue($value);
 
 		$map = [
@@ -51,26 +77,6 @@ final class MonthInterpreter extends BasePartInterpreter
 		];
 
 		return $map[$intValue];
-	}
-
-	private function deduplicateValue(string $value): string
-	{
-		$map = [
-			'JAN' => '1',
-			'FEB' => '2',
-			'MAR' => '3',
-			'APR' => '4',
-			'MAY' => '5',
-			'JUN' => '6',
-			'JUL' => '7',
-			'AUG' => '8',
-			'SEP' => '9',
-			'OCT' => '10',
-			'NOV' => '11',
-			'DEC' => '12',
-		];
-
-		return $map[strtoupper($value)] ?? $value;
 	}
 
 	private function convertNumericValue(string $value): int

@@ -17,6 +17,11 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 		return in_array($part->getValue(), ['*', '?'], true);
 	}
 
+	public function reduceValuePart(ValuePart $part): ValuePart
+	{
+		return $part;
+	}
+
 	protected function getInStepName(): string
 	{
 		return $this->getInValueName();
@@ -63,7 +68,7 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 			. $intValue;
 	}
 
-	private function convertNumericValue(string $value): int
+	public function convertNumericValue(string $value): int
 	{
 		assert(is_numeric($value));
 		$intValue = (int) $value;
