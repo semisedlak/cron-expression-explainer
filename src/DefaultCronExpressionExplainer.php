@@ -7,12 +7,17 @@ use DateTimeZone;
 use InvalidArgumentException;
 use Orisai\CronExpressionExplainer\Exception\UnsupportedExpression;
 use Orisai\CronExpressionExplainer\Exception\UnsupportedLanguage;
+use Orisai\CronExpressionExplainer\Interpreter\BasePartInterpreter;
 use Orisai\CronExpressionExplainer\Interpreter\DayOfMonthInterpreter;
 use Orisai\CronExpressionExplainer\Interpreter\DayOfWeekInterpreter;
 use Orisai\CronExpressionExplainer\Interpreter\HourInterpreter;
 use Orisai\CronExpressionExplainer\Interpreter\MinuteInterpreter;
 use Orisai\CronExpressionExplainer\Interpreter\MonthInterpreter;
+use Orisai\CronExpressionExplainer\Part\ListPart;
+use Orisai\CronExpressionExplainer\Part\Part;
 use Orisai\CronExpressionExplainer\Part\PartParser;
+use Orisai\CronExpressionExplainer\Part\RangePart;
+use Orisai\CronExpressionExplainer\Part\StepPart;
 use Orisai\CronExpressionExplainer\Part\ValuePart;
 use function array_key_exists;
 use function assert;
@@ -59,49 +64,39 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 		?string $language = null
 	): string
 	{
-		if ($language !== null && !array_key_exists($language, $this->getSupportedLanguages())) {
-			throw new UnsupportedLanguage($language);
-		}
-
-		try {
-			$expr = new CronExpression($expression);
-		} catch (InvalidArgumentException $exception) {
-			throw new UnsupportedExpression($exception->getMessage(), $exception);
-		}
+		$this->checkLanguageIsSupported($language);
+		$expr = $this->createExpression($expression);
 
 		$repeatSeconds ??= 0;
-		$minute = $expr->getExpression(CronExpression::MINUTE);
-		assert($minute !== null);
-		$hour = $expr->getExpression(CronExpression::HOUR);
-		assert($hour !== null);
-		$dayOfMonth = $expr->getExpression(CronExpression::DAY);
-		assert($dayOfMonth !== null);
-		$month = $expr->getExpression(CronExpression::MONTH);
-		assert($month !== null);
-		$dayOfWeek = $expr->getExpression(CronExpression::WEEKDAY);
-		assert($dayOfWeek !== null);
-
-		$minutePart = $this->minuteInterpreter->reducePart(
-			$this->parser->parsePart($minute),
+		$minutePart = $this->processExpressionPart(
+			$expr,
+			CronExpression::MINUTE,
+			$this->minuteInterpreter,
 		);
-		$hourPart = $this->hourInterpreter->reducePart(
-			$this->parser->parsePart($hour),
+		$hourPart = $this->processExpressionPart(
+			$expr,
+			CronExpression::HOUR,
+			$this->hourInterpreter,
 		);
-		$dayOfMonthPart = $this->dayOfMonthInterpreter->reducePart(
-			$this->parser->parsePart($dayOfMonth),
+		$dayOfMonthPart = $this->processExpressionPart(
+			$expr,
+			CronExpression::DAY,
+			$this->dayOfMonthInterpreter,
 		);
-		$monthPart = $this->monthInterpreter->reducePart(
-			$this->parser->parsePart($month),
+		$monthPart = $this->processExpressionPart(
+			$expr,
+			CronExpression::MONTH,
+			$this->monthInterpreter,
 		);
-		$dayOfWeekPart = $this->dayOfWeekInterpreter->reducePart(
-			$this->parser->parsePart($dayOfWeek),
+		$dayOfWeekPart = $this->processExpressionPart(
+			$expr,
+			CronExpression::WEEKDAY,
+			$this->dayOfWeekInterpreter,
 		);
 
 		$explanation = 'At ';
 		$secondsExplanation = $this->explainSeconds($repeatSeconds);
-		if ($secondsExplanation !== '') {
-			$explanation .= $secondsExplanation;
-		}
+		$explanation .= $secondsExplanation;
 
 		if (
 			$minutePart instanceof ValuePart
@@ -166,6 +161,45 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 		}
 
 		return $explanation . '.';
+	}
+
+	/**
+	 * @throws UnsupportedLanguage
+	 */
+	private function checkLanguageIsSupported(?string $language): void
+	{
+		if ($language !== null && !array_key_exists($language, $this->getSupportedLanguages())) {
+			throw new UnsupportedLanguage($language);
+		}
+	}
+
+	/**
+	 * @throws UnsupportedExpression
+	 */
+	private function createExpression(string $expression): CronExpression
+	{
+		try {
+			return new CronExpression($expression);
+		} catch (InvalidArgumentException $exception) {
+			throw new UnsupportedExpression($exception->getMessage(), $exception);
+		}
+	}
+
+	/**
+	 * @return ListPart|StepPart|RangePart|ValuePart
+	 */
+	private function processExpressionPart(
+		CronExpression $expression,
+		int $partName,
+		BasePartInterpreter $interpreter
+	): Part
+	{
+		$part = $expression->getExpression($partName);
+		assert($part !== null);
+
+		return $interpreter->reducePart(
+			$this->parser->parsePart($part),
+		);
 	}
 
 	/**
