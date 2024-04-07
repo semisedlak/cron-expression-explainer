@@ -21,8 +21,6 @@ abstract class BasePartInterpreter
 	 */
 	public function explainPart(Part $part, bool $renderName = true): string
 	{
-		$part = $this->reducePart($part);
-
 		if ($part instanceof ListPart) {
 			$list = $part->getParts();
 			$firstKey = array_key_first($list);
@@ -82,7 +80,7 @@ abstract class BasePartInterpreter
 	 * @param ListPart|StepPart|RangePart|ValuePart $part
 	 * @return ListPart|StepPart|RangePart|ValuePart
 	 */
-	private function reducePart(Part $part): Part
+	public function reducePart(Part $part): Part
 	{
 		if ($part instanceof ListPart) {
 			$items = $part->getParts();

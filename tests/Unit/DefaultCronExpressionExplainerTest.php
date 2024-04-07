@@ -1074,6 +1074,12 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
+			'*/1 * * * *',
+			59,
+			'At every 59 seconds.',
+		];
+
+		yield [
 			'1 * * * *',
 			59,
 			'At every 59 seconds at minute 1.',
