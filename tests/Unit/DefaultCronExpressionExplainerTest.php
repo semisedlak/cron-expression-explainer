@@ -272,6 +272,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
+			'000 000 * * *',
+			'At 00:00.',
+		];
+
+		yield [
 			'10 0 * * *',
 			'At 00:10.',
 		];

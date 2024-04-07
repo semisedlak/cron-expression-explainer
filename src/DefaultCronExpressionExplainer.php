@@ -103,12 +103,12 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 				$explanation .= ' at ';
 			}
 
-			$this->hourInterpreter->convertNumericValue($hourPartValue);
-			$this->minuteInterpreter->convertNumericValue($minutePartValue);
+			$hourPartValue = $this->hourInterpreter->convertNumericValue($hourPartValue);
+			$minutePartValue = $this->minuteInterpreter->convertNumericValue($minutePartValue);
 
-			$explanation .= str_pad($hourPartValue, 2, '0', STR_PAD_LEFT)
+			$explanation .= str_pad((string) $hourPartValue, 2, '0', STR_PAD_LEFT)
 				. ':'
-				. str_pad($minutePartValue, 2, '0', STR_PAD_LEFT);
+				. str_pad((string) $minutePartValue, 2, '0', STR_PAD_LEFT);
 		} else {
 			if (
 				!(
