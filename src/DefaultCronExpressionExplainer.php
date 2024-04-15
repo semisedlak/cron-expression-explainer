@@ -6,7 +6,7 @@ use Cron\CronExpression;
 use DateTimeZone;
 use InvalidArgumentException;
 use Orisai\CronExpressionExplainer\Exception\UnsupportedExpression;
-use Orisai\CronExpressionExplainer\Exception\UnsupportedLanguage;
+use Orisai\CronExpressionExplainer\Exception\UnsupportedLocale;
 use Orisai\CronExpressionExplainer\Interpreter\BasePartInterpreter;
 use Orisai\CronExpressionExplainer\Interpreter\DayOfMonthInterpreter;
 use Orisai\CronExpressionExplainer\Interpreter\DayOfWeekInterpreter;
@@ -19,16 +19,21 @@ use Orisai\CronExpressionExplainer\Part\PartParser;
 use Orisai\CronExpressionExplainer\Part\RangePart;
 use Orisai\CronExpressionExplainer\Part\StepPart;
 use Orisai\CronExpressionExplainer\Part\ValuePart;
+use Orisai\CronExpressionExplainer\Translator\PartTranslator;
 use function array_key_exists;
 use function assert;
 use function is_numeric;
+use function str_ends_with;
 use function str_pad;
+use function ucfirst;
 use const STR_PAD_LEFT;
 
 final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 {
 
 	private PartParser $parser;
+
+	private PartTranslator $translator;
 
 	private MinuteInterpreter $minuteInterpreter;
 
@@ -40,34 +45,117 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 
 	private DayOfWeekInterpreter $dayOfWeekInterpreter;
 
+	private string $defaultLocale = 'en';
+
 	public function __construct()
 	{
 		$this->parser = new PartParser();
-		$this->minuteInterpreter = new MinuteInterpreter();
-		$this->hourInterpreter = new HourInterpreter();
-		$this->dayOfMonthInterpreter = new DayOfMonthInterpreter();
-		$this->monthInterpreter = new MonthInterpreter();
-		$this->dayOfWeekInterpreter = new DayOfWeekInterpreter();
+		$this->translator = new PartTranslator();
+		$this->minuteInterpreter = new MinuteInterpreter($this->translator);
+		$this->hourInterpreter = new HourInterpreter($this->translator);
+		$this->dayOfMonthInterpreter = new DayOfMonthInterpreter($this->translator);
+		$this->monthInterpreter = new MonthInterpreter($this->translator);
+		$this->dayOfWeekInterpreter = new DayOfWeekInterpreter($this->translator);
 	}
 
-	public function getSupportedLanguages(): array
+	public function getSupportedLocales(): array
 	{
 		return [
+			'cs' => 'czech',
 			'en' => 'english',
 		];
+	}
+
+	public function setDefaultLocale(string $locale): void
+	{
+		$this->checkLocaleIsSupported($locale);
+		$this->defaultLocale = $locale;
+	}
+
+	/**
+	 * @throws UnsupportedLocale
+	 */
+	private function checkLocaleIsSupported(?string $locale): void
+	{
+		if ($locale !== null && !array_key_exists($locale, $this->getSupportedLocales())) {
+			throw new UnsupportedLocale($locale);
+		}
 	}
 
 	public function explain(
 		string $expression,
 		?int $repeatSeconds = null,
 		?DateTimeZone $timeZone = null,
-		?string $language = null
+		?string $locale = null
 	): string
 	{
-		$this->checkLanguageIsSupported($language);
-		$expr = $this->createExpression($expression);
+		$this->checkLocaleIsSupported($locale);
+		$locale ??= $this->defaultLocale;
 
 		$repeatSeconds ??= 0;
+
+		[$minutePart, $hourPart, $dayOfMonthPart, $monthPart, $dayOfWeekPart] = $this->expressionToParts($expression);
+
+		return $this->build(
+			$locale,
+			$repeatSeconds,
+			$minutePart,
+			$hourPart,
+			$dayOfWeekPart,
+			$dayOfMonthPart,
+			$monthPart,
+			$timeZone,
+		);
+	}
+
+	public function explainInLocales(
+		array $locales,
+		string $expression,
+		?int $repeatSeconds = null,
+		?DateTimeZone $timeZone = null
+	): array
+	{
+		if ($locales === []) {
+			return [];
+		}
+
+		foreach ($locales as $locale) {
+			$this->checkLocaleIsSupported($locale);
+		}
+
+		$repeatSeconds ??= 0;
+
+		[$minutePart, $hourPart, $dayOfMonthPart, $monthPart, $dayOfWeekPart] = $this->expressionToParts($expression);
+
+		$translations = [];
+		foreach ($locales as $locale) {
+			$translations[$locale] = $this->build(
+				$locale,
+				$repeatSeconds,
+				$minutePart,
+				$hourPart,
+				$dayOfWeekPart,
+				$dayOfMonthPart,
+				$monthPart,
+				$timeZone,
+			);
+		}
+
+		return $translations;
+	}
+
+	/**
+	 * @return array{
+	 *     0: ListPart|StepPart|RangePart|ValuePart,
+	 *     1: ListPart|StepPart|RangePart|ValuePart,
+	 *     2: ListPart|StepPart|RangePart|ValuePart,
+	 *     3: ListPart|StepPart|RangePart|ValuePart,
+	 *     4: ListPart|StepPart|RangePart|ValuePart,
+	 * }
+	 */
+	private function expressionToParts(string $expression): array
+	{
+		$expr = $this->createExpression($expression);
 		$minutePart = $this->processExpressionPart(
 			$expr,
 			CronExpression::MINUTE,
@@ -94,98 +182,7 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 			$this->dayOfWeekInterpreter,
 		);
 
-		$explanation = 'At ';
-		$secondsExplanation = $this->explainSeconds($repeatSeconds);
-		$explanation .= $secondsExplanation;
-
-		if (
-			$minutePart instanceof ValuePart
-			&& $hourPart instanceof ValuePart
-			&& is_numeric($minutePartValue = $minutePart->getValue())
-			&& is_numeric($hourPartValue = $hourPart->getValue())
-		) {
-			if ($secondsExplanation !== '') {
-				$explanation .= ' at ';
-			}
-
-			$hourPartValue = $this->hourInterpreter->convertNumericValue($hourPartValue);
-			$minutePartValue = $this->minuteInterpreter->convertNumericValue($minutePartValue);
-
-			$explanation .= str_pad((string) $hourPartValue, 2, '0', STR_PAD_LEFT)
-				. ':'
-				. str_pad((string) $minutePartValue, 2, '0', STR_PAD_LEFT);
-		} else {
-			if (
-				!(
-					$repeatSeconds > 0
-					&& $minutePart instanceof ValuePart
-					&& $this->minuteInterpreter->isAll($minutePart)
-				)
-			) {
-				if ($secondsExplanation !== '') {
-					$explanation .= ' at ';
-				}
-
-				$explanation .= $this->minuteInterpreter->explainPart($minutePart);
-			}
-
-			$hourExplanation = $this->hourInterpreter->explainPart($hourPart);
-			$explanation .= $hourExplanation !== '' ? ' past ' . $hourExplanation : '';
-		}
-
-		$dayOfWeekExplanation = $this->dayOfWeekInterpreter->explainPart($dayOfWeekPart);
-		if (
-			$dayOfWeekExplanation === ''
-			&& $dayOfMonthPart instanceof ValuePart
-			&& $monthPart instanceof ValuePart
-			&& is_numeric($dayOfMonthPart->getValue())
-			&& is_numeric($monthPart->getValue())
-		) {
-			$dayOfMonthValue = $this->dayOfMonthInterpreter->convertNumericValue($dayOfMonthPart->getValue());
-			$explanation .= ' on '
-				. $dayOfMonthValue
-				. $this->dayOfMonthInterpreter->getNumberExtension($dayOfMonthValue)
-				. ' of '
-				. $this->monthInterpreter->explainPart($monthPart);
-		} else {
-			$dayOfMonthExplanation = $this->dayOfMonthInterpreter->explainPart($dayOfMonthPart);
-
-			$explanation .= $dayOfMonthExplanation !== '' ? ' on ' . $dayOfMonthExplanation : '';
-
-			if ($dayOfMonthExplanation !== '' && $dayOfWeekExplanation !== '') {
-				$explanation .= ' and';
-			}
-
-			$explanation .= $dayOfWeekExplanation !== '' ? ' on ' : '';
-			if (
-				$dayOfMonthExplanation !== ''
-				&& $dayOfWeekPart instanceof ValuePart
-				&& !$this->dayOfWeekInterpreter->isAll($dayOfWeekPart)
-			) {
-				$explanation .= 'every ';
-			}
-
-			$explanation .= $dayOfWeekExplanation;
-
-			$monthExplanation = $this->monthInterpreter->explainPart($monthPart);
-			$explanation .= $monthExplanation !== '' ? ' in ' . $monthExplanation : '';
-		}
-
-		if ($timeZone !== null) {
-			$explanation .= " in {$timeZone->getName()} time zone";
-		}
-
-		return $explanation . '.';
-	}
-
-	/**
-	 * @throws UnsupportedLanguage
-	 */
-	private function checkLanguageIsSupported(?string $language): void
-	{
-		if ($language !== null && !array_key_exists($language, $this->getSupportedLanguages())) {
-			throw new UnsupportedLanguage($language);
-		}
+		return [$minutePart, $hourPart, $dayOfMonthPart, $monthPart, $dayOfWeekPart];
 	}
 
 	/**
@@ -219,18 +216,159 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 
 	/**
 	 * @param int<0, 59> $repeatSeconds
+	 * @param ListPart|StepPart|RangePart|ValuePart $minutePart
+	 * @param ListPart|StepPart|RangePart|ValuePart $hourPart
+	 * @param ListPart|StepPart|RangePart|ValuePart $dayOfWeekPart
+	 * @param ListPart|StepPart|RangePart|ValuePart $dayOfMonthPart
+	 * @param ListPart|StepPart|RangePart|ValuePart $monthPart
 	 */
-	private function explainSeconds(int $repeatSeconds): string
+	private function build(
+		string $locale,
+		int $repeatSeconds,
+		Part $minutePart,
+		Part $hourPart,
+		Part $dayOfWeekPart,
+		Part $dayOfMonthPart,
+		Part $monthPart,
+		?DateTimeZone $timeZone
+	): string
+	{
+		$explanation = '';
+		$secondsExplanation = $this->explainSeconds($repeatSeconds, $locale);
+		$explanation .= $secondsExplanation;
+
+		if (
+			$minutePart instanceof ValuePart
+			&& $hourPart instanceof ValuePart
+			&& is_numeric($minutePartValue = $minutePart->getValue())
+			&& is_numeric($hourPartValue = $hourPart->getValue())
+		) {
+			if ($secondsExplanation !== '') {
+				$explanation .= ' ';
+			}
+
+			$hourPartValue = str_pad(
+				(string) $this->hourInterpreter->convertNumericValue($hourPartValue),
+				2,
+				'0',
+				STR_PAD_LEFT,
+			);
+			$minutePartValue = str_pad(
+				(string) $this->minuteInterpreter->convertNumericValue($minutePartValue),
+				2,
+				'0',
+				STR_PAD_LEFT,
+			);
+
+			$explanation .= $this->translator->translate('hour+minute', [
+				'hour' => $hourPartValue,
+				'minute' => $minutePartValue,
+			], $locale);
+		} else {
+			if (
+				!(
+					$repeatSeconds > 0
+					&& $minutePart instanceof ValuePart
+					&& $this->minuteInterpreter->isAll($minutePart)
+				)
+			) {
+				if ($secondsExplanation !== '') {
+					$explanation .= ' ';
+				}
+
+				$explanation .= $this->translator->translate('before-minute', [], $locale);
+				$explanation .= $this->minuteInterpreter->explainPart($minutePart, $locale);
+			}
+
+			$hourExplanation = $this->hourInterpreter->explainPart($hourPart, $locale);
+			if ($hourExplanation !== '') {
+				$explanation .= $this->translator->translate('before-hour', [], $locale);
+				$explanation .= $hourExplanation;
+			}
+		}
+
+		$dayOfWeekExplanation = $this->dayOfWeekInterpreter->explainPart($dayOfWeekPart, $locale);
+		if (
+			$dayOfWeekExplanation === ''
+			&& $dayOfMonthPart instanceof ValuePart
+			&& $monthPart instanceof ValuePart
+			&& is_numeric($dayOfMonthPart->getValue())
+			&& is_numeric($monthPart->getValue())
+		) {
+			$explanation .= ' ' . $this->translator->translate('day-of-month+month', [
+				'day' => $this->dayOfMonthInterpreter->convertNumericValue($dayOfMonthPart->getValue()),
+				'month' => $monthPart->getValue(),
+			], $locale);
+		} else {
+			$dayOfMonthExplanation = $this->dayOfMonthInterpreter->explainPart($dayOfMonthPart, $locale);
+
+			if ($dayOfMonthExplanation !== '') {
+				$explanation .= $this->translator->translate('before-day-of-month', [], $locale);
+				$explanation .= $dayOfMonthExplanation;
+			}
+
+			if ($dayOfMonthExplanation !== '' && $dayOfWeekExplanation !== '') {
+				$explanation .= $this->translator->translate('between-day-of-month-and-week', [], $locale);
+			}
+
+			if ($dayOfWeekExplanation !== '') {
+				$explanation .= $this->translator->translate('before-day-of-week', [
+					'dayNumber' => $this->getFirstValueIfNumeric($dayOfWeekPart),
+				], $locale);
+			}
+
+			$explanation .= $dayOfWeekExplanation;
+
+			$monthExplanation = $this->monthInterpreter->explainPart($monthPart, $locale);
+			if ($monthExplanation !== '') {
+				$explanation .= $this->translator->translate('before-month', [], $locale);
+				$explanation .= $monthExplanation;
+			}
+		}
+
+		if ($timeZone !== null) {
+			$explanation .= ' ' . $this->translator->translate('timezone', [
+				'tz' => $timeZone->getName(),
+			], $locale);
+		}
+
+		if (!str_ends_with($explanation, '.')) {
+			$explanation .= '.';
+		}
+
+		return ucfirst($explanation);
+	}
+
+	/**
+	 * @param int<0, 59> $repeatSeconds
+	 */
+	private function explainSeconds(int $repeatSeconds, string $locale): string
 	{
 		if ($repeatSeconds <= 0) {
 			return '';
 		}
 
-		if ($repeatSeconds === 1) {
-			return 'every second';
+		return $this->translator->translate('second', [
+			'second' => $repeatSeconds,
+		], $locale);
+	}
+
+	private function getFirstValueIfNumeric(Part $part): string
+	{
+		if ($part instanceof ListPart) {
+			$part = $part->getParts()[0];
 		}
 
-		return "every $repeatSeconds seconds";
+		if (!$part instanceof ValuePart) {
+			return 'NaN';
+		}
+
+		$value = $part->getValue();
+		if (!is_numeric($value)) {
+			return 'NaN';
+		}
+
+		return $value;
 	}
 
 }

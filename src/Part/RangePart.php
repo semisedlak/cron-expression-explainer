@@ -15,6 +15,11 @@ final class RangePart implements Part
 		$this->right = $right;
 	}
 
+	public function getName(): string
+	{
+		return 'range';
+	}
+
 	public function getLeft(): ValuePart
 	{
 		return $this->left;

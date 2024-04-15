@@ -19,24 +19,14 @@ final class MinuteInterpreter extends BasePartInterpreter
 		return $part;
 	}
 
-	protected function getInStepName(): string
-	{
-		return $this->getInValueName();
-	}
-
-	protected function getInRangeName(): string
-	{
-		return $this->getInValueName();
-	}
-
-	private function getInValueName(): string
+	protected function getKey(): string
 	{
 		return 'minute';
 	}
 
-	protected function getAsteriskDescription(): string
+	protected function getAsteriskDescription(string $locale): string
 	{
-		return 'every minute';
+		return $this->translator->translate('every-minute', [], $locale);
 	}
 
 	public function convertNumericValue(string $value): int
@@ -49,10 +39,20 @@ final class MinuteInterpreter extends BasePartInterpreter
 		return $intValue;
 	}
 
-	protected function translateValue(string $value, bool $renderName): string
+	protected function translateValue(string $value, string $context, string $locale, bool $renderName): string
 	{
-		return ($renderName ? "{$this->getInValueName()} " : '')
-			. $this->convertNumericValue($value);
+		$key = $this->getKey();
+		if ($renderName) {
+			$key .= '-named';
+		}
+
+		return $this->translator->translate(
+			$key,
+			[
+				'minute' => $this->convertNumericValue($value),
+			],
+			$locale,
+		);
 	}
 
 }

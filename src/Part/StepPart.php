@@ -19,6 +19,11 @@ final class StepPart implements Part
 		$this->step = $step;
 	}
 
+	public function getName(): string
+	{
+		return 'step';
+	}
+
 	/**
 	 * @return RangePart|ValuePart
 	 */

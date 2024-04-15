@@ -19,22 +19,12 @@ final class HourInterpreter extends BasePartInterpreter
 		return $part;
 	}
 
-	protected function getInStepName(): string
-	{
-		return $this->getInValueName();
-	}
-
-	protected function getInRangeName(): string
-	{
-		return $this->getInValueName();
-	}
-
-	private function getInValueName(): string
+	protected function getKey(): string
 	{
 		return 'hour';
 	}
 
-	protected function getAsteriskDescription(): string
+	protected function getAsteriskDescription(string $locale): string
 	{
 		return '';
 	}
@@ -49,10 +39,20 @@ final class HourInterpreter extends BasePartInterpreter
 		return $intValue;
 	}
 
-	protected function translateValue(string $value, bool $renderName): string
+	protected function translateValue(string $value, string $context, string $locale, bool $renderName): string
 	{
-		return ($renderName ? "{$this->getInValueName()} " : '')
-			. $this->convertNumericValue($value);
+		$key = $this->getKey();
+		if ($renderName) {
+			$key .= '-named';
+		}
+
+		return $this->translator->translate(
+			$key,
+			[
+				'hour' => $this->convertNumericValue($value),
+			],
+			$locale,
+		);
 	}
 
 }

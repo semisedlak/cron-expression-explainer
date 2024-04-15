@@ -16,14 +16,14 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 {
 
 	private const Duplicates = [
-		7 => '0',
-		'SUN' => '0',
 		'MON' => '1',
 		'TUE' => '2',
 		'WED' => '3',
 		'THU' => '4',
 		'FRI' => '5',
 		'SAT' => '6',
+		'SUN' => '7',
+		0 => '7',
 	];
 
 	public function isAll(ValuePart $part): bool
@@ -33,7 +33,10 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 
 	public function reduceValuePart(ValuePart $part): ValuePart
 	{
-		$value = strtoupper($part->getValue());
+		$value = $part->getValue();
+		$value = is_numeric($value)
+			? (int) $value
+			: strtoupper($value);
 
 		$deduplicated = self::Duplicates[$value] ?? null;
 		if ($deduplicated !== null) {
@@ -43,22 +46,17 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		return $part;
 	}
 
-	protected function getInStepName(): string
-	{
-		return $this->getInRangeName();
-	}
-
-	protected function getInRangeName(): string
+	protected function getKey(): string
 	{
 		return 'day-of-week';
 	}
 
-	protected function getAsteriskDescription(): string
+	protected function getAsteriskDescription(string $locale): string
 	{
 		return '';
 	}
 
-	protected function translateValue(string $value, bool $renderName): string
+	protected function translateValue(string $value, string $context, string $locale, bool $renderName): string
 	{
 		if (str_contains($value, '#')) {
 			[$value, $nth] = explode('#', $value);
@@ -74,29 +72,45 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		$value = $this->deduplicateValue($value);
 		$intValue = $this->convertNumericValue($value);
 
-		$map = [
-			0 => 'Sunday',
-			1 => 'Monday',
-			2 => 'Tuesday',
-			3 => 'Wednesday',
-			4 => 'Thursday',
-			5 => 'Friday',
-			6 => 'Saturday',
-		];
+		$translated = $this->translator->translate(
+			$this->getKey(),
+			[
+				'dayNumber' => $intValue,
+				'context' => $context,
+			],
+			$locale,
+		);
 
 		if (isset($nth)) {
 			$intNth = (int) $nth;
 			assert($nth === (string) $intNth);
 			assert($intNth >= 0 && $intNth <= 5);
 
-			return $nth . $this->getNumberExtension($intNth) . ' ' . $map[$intValue];
+			return $this->translator->translate(
+				'day-of-week-nth',
+				[
+					'dayNumber' => $intValue,
+					'day' => $translated,
+					'nth' => $nth,
+					'context' => $context,
+				],
+				$locale,
+			);
 		}
 
 		if ($last) {
-			return 'the last ' . $map[$intValue];
+			return $this->translator->translate(
+				'day-of-week-last',
+				[
+					'dayNumber' => $intValue,
+					'day' => $translated,
+					'context' => $context,
+				],
+				$locale,
+			);
 		}
 
-		return $map[$intValue];
+		return $translated;
 	}
 
 	private function deduplicateValue(string $value): string
@@ -109,7 +123,7 @@ final class DayOfWeekInterpreter extends BasePartInterpreter
 		assert(is_numeric($value));
 		$intValue = (int) $value;
 		assert((float) $value === (float) $intValue);
-		assert($intValue >= 0 && $intValue <= 6);
+		assert($intValue >= 1 && $intValue <= 7);
 
 		return $intValue;
 	}

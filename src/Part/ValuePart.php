@@ -12,6 +12,11 @@ final class ValuePart implements Part
 		$this->value = $value;
 	}
 
+	public function getName(): string
+	{
+		return 'value';
+	}
+
 	public function getValue(): string
 	{
 		return $this->value;

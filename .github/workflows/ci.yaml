@@ -102,15 +102,24 @@ jobs:
       matrix:
         operating-system: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
         php-version: [ "7.4", "8.0", "8.1" ]
+        php-extensions: [ "fileinfo, intl, json, mbstring, sodium, ssh2" ]
         composer-flags: [ "" ]
         experimental: [ false ]
         include:
           - operating-system: "ubuntu-latest"
             php-version: "7.4"
+            php-extensions: "fileinfo, intl, json, mbstring, sodium, ssh2"
             composer-flags: "--prefer-lowest --prefer-stable"
             experimental: false
           - operating-system: "ubuntu-latest"
             php-version: "8.2"
+            php-extensions: "fileinfo, intl, json, mbstring, sodium, ssh2"
+            composer-flags: "--ignore-platform-req=php+"
+            experimental: false
+          # No intl
+          - operating-system: "ubuntu-latest"
+            php-version: "8.2"
+            php-extensions: "fileinfo, json, mbstring, sodium, ssh2"
             composer-flags: "--ignore-platform-req=php+"
             experimental: false
 
@@ -124,6 +133,7 @@ jobs:
           version: "${{ matrix.php-version }}"
           coverage: "pcov"
           token: "${{ secrets.GITHUB_TOKEN }}"
+          extensions: "${{ matrix.php-extensions }}"
 
       - name: "Composer"
         uses: "orisai/github-workflows/.github/actions/setup-composer@v1"

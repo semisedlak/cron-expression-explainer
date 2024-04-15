@@ -7,6 +7,7 @@ use Orisai\CronExpressionExplainer\Part\Part;
 use Orisai\CronExpressionExplainer\Part\RangePart;
 use Orisai\CronExpressionExplainer\Part\StepPart;
 use Orisai\CronExpressionExplainer\Part\ValuePart;
+use Orisai\CronExpressionExplainer\Translator\PartTranslator;
 use function array_key_first;
 use function array_key_last;
 
@@ -16,28 +17,51 @@ use function array_key_last;
 abstract class BasePartInterpreter
 {
 
+	protected PartTranslator $translator;
+
+	public function __construct(PartTranslator $translator)
+	{
+		$this->translator = $translator;
+	}
+
 	/**
 	 * @param ListPart|StepPart|RangePart|ValuePart $part
 	 */
-	public function explainPart(Part $part, bool $renderName = true): string
+	public function explainPart(Part $part, string $locale, bool $renderName = true): string
+	{
+		return $this->explainPartInternal($part, $part, $locale, $renderName);
+	}
+
+	/**
+	 * @param ListPart|StepPart|RangePart|ValuePart $part
+	 */
+	private function explainPartInternal(Part $part, Part $contextPart, string $locale, bool $renderName = true): string
 	{
 		if ($part instanceof ListPart) {
 			$list = $part->getParts();
+			$listSeparator = $this->translator->translate('listSeparator', [], $locale);
 			$firstKey = array_key_first($list);
 			$lastKey = array_key_last($list);
+
 			$string = '';
+			$lastValue = '';
 			foreach ($list as $key => $item) {
-				$string .= $this->explainPart($item, $key === $firstKey);
+				$explainedPart = $this->explainPartInternal($item, $part, $locale, $key === $firstKey);
 				if ($key !== $lastKey) {
-					if (++$key === $lastKey) {
-						$string .= ' and ';
-					} else {
-						$string .= ', ';
+					$string .= $explainedPart;
+
+					if (++$key !== $lastKey) {
+						$string .= $listSeparator;
 					}
+				} else {
+					$lastValue = $explainedPart;
 				}
 			}
 
-			return $string;
+			return $this->translator->translate('list', [
+				'values' => $string,
+				'lastValue' => $lastValue,
+			], $locale);
 		}
 
 		if ($part instanceof StepPart) {
@@ -45,35 +69,48 @@ abstract class BasePartInterpreter
 			$step = $part->getStep();
 
 			if ($range instanceof ValuePart && $this->isAll($range)) {
-				return 'every '
-					. $step
-					. $this->getNumberExtension($step)
-					. " {$this->getInStepName()}";
+				return $this->translator->translate(
+					"step-all-{$this->getKey()}",
+					[
+						'step' => $step,
+					],
+					$locale,
+				);
 			}
 
-			return 'every '
-				. $step
-				. $this->getNumberExtension($step)
-				. " {$this->getInStepName()} "
-				. $this->explainPart($range, false);
+			return $this->translator->translate(
+				"step-{$this->getKey()}",
+				[
+					'step' => $step,
+					'part' => $this->explainPartInternal($range, $part, $locale, false),
+				],
+				$locale,
+			);
 		}
 
 		if ($part instanceof RangePart) {
 			$left = $part->getLeft();
 			$right = $part->getRight();
+			$key = "range-{$this->getKey()}";
+			if ($renderName) {
+				$key .= '-named';
+			}
 
-			return ($renderName ? "every {$this->getInRangeName()} " : '')
-				. 'from '
-				. $this->explainPart($left, false)
-				. ' through '
-				. $this->explainPart($right, false);
+			return $this->translator->translate(
+				$key,
+				[
+					'left' => $this->explainPartInternal($left, $part, $locale, false),
+					'right' => $this->explainPartInternal($right, $part, $locale, false),
+				],
+				$locale,
+			);
 		}
 
 		if ($this->isAll($part)) {
-			return $this->getAsteriskDescription();
+			return $this->getAsteriskDescription($locale);
 		}
 
-		return $this->translateValue($part->getValue(), $renderName);
+		return $this->translateValue($part->getValue(), $contextPart->getName(), $locale, $renderName);
 	}
 
 	/**
@@ -165,29 +202,15 @@ abstract class BasePartInterpreter
 
 	abstract public function reduceValuePart(ValuePart $part): ValuePart;
 
-	abstract protected function getInRangeName(): string;
+	abstract protected function getKey(): string;
 
-	abstract protected function getInStepName(): string;
+	abstract protected function getAsteriskDescription(string $locale): string;
 
-	abstract protected function getAsteriskDescription(): string;
-
-	abstract protected function translateValue(string $value, bool $renderName): string;
-
-	public function getNumberExtension(int $number): string
-	{
-		if ($number === 1) {
-			return 'st';
-		}
-
-		if ($number === 2) {
-			return 'nd';
-		}
-
-		if ($number === 3) {
-			return 'rd';
-		}
-
-		return 'th';
-	}
+	abstract protected function translateValue(
+		string $value,
+		string $context,
+		string $locale,
+		bool $renderName
+	): string;
 
 }

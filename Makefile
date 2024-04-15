@@ -30,6 +30,9 @@ phpstan-baseline: ## Add PHPStan errors to baseline
 
 # Tests
 
+update-snapshots: ## Update snapshots used for testing
+	$(PRE_PHP) php tests/Snapshots/update-snapshots.php
+
 .PHONY: tests
 tests: ## Run all tests
 	$(PRE_PHP) $(PHPUNIT_COMMAND) $(ARGS)

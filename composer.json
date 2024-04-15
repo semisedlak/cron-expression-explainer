@@ -30,11 +30,13 @@
 	"require": {
 		"php": ">=7.4.0 <8.3.0",
 		"dragonmantank/cron-expression": "^3.3.0",
+		"symfony/intl": "^5.4.35|^6.4.3|^7.0.3",
 		"symfony/polyfill-php80": "^1.29"
 	},
 	"require-dev": {
 		"brianium/paratest": "^6.3.0",
 		"infection/infection": "^0.26.0",
+		"nette/utils": "^3.1.0|^4.0.0",
 		"orisai/coding-standard": "^3.0.0",
 		"phpstan/extension-installer": "^1.0.0",
 		"phpstan/phpstan": "^1.0.0",

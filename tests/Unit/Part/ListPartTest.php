@@ -20,6 +20,7 @@ final class ListPartTest extends TestCase
 		];
 		$part = new ListPart($parts);
 
+		self::assertSame('list', $part->getName());
 		self::assertSame($parts, $part->getParts());
 	}
 

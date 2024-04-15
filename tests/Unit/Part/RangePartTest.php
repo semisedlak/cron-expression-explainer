@@ -15,6 +15,7 @@ final class RangePartTest extends TestCase
 		$right = new ValuePart('20');
 		$part = new RangePart($left, $right);
 
+		self::assertSame('range', $part->getName());
 		self::assertSame($left, $part->getLeft());
 		self::assertSame($right, $part->getRight());
 	}

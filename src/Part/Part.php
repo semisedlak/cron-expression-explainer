@@ -8,4 +8,6 @@ namespace Orisai\CronExpressionExplainer\Part;
 interface Part
 {
 
+	public function getName(): string;
+
 }

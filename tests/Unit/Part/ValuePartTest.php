@@ -13,6 +13,7 @@ final class ValuePartTest extends TestCase
 		$value = '*';
 		$part = new ValuePart($value);
 
+		self::assertSame('value', $part->getName());
 		self::assertSame($value, $part->getValue());
 	}
 

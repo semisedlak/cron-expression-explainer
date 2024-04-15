@@ -8,9 +8,10 @@ Human-readable cron expressions
 - [Usage](#usage)
 - [Seconds](#seconds)
 - [Time zones](#time-zones)
-- [Translations](#translations)
+- [Localization](#localization)
 - [Handling unsupported expressions](#handling-unsupported-expressions)
 - [Compatibility](#compatibility)
+- [Contributing](#contributing)
 
 ## Setup
 
@@ -21,6 +22,8 @@ composer require orisai/cron-expression-explainer
 ```
 
 ## Usage
+
+Explain any cron expression
 
 ```php
 use Orisai\CronExpressionExplainer\DefaultCronExpressionExplainer;
@@ -45,6 +48,10 @@ $explainer->explain('* * * * 7L'); // At every minute on the last Sunday.
 
 ## Seconds
 
+Add amount of seconds after which expression should match again
+
+> This is a feature of [orisai/scheduler](https://github.com/orisai/scheduler)
+
 ```php
 $explainer->explain('* * * * *', 1); // At every second.
 $explainer->explain('* * * * *', 30); // At every 30 seconds.
@@ -54,20 +61,33 @@ $explainer->explain('1 * * * *', 2); // At every 2 seconds at minute 1.
 
 ## Time zones
 
+Add timezone in which the cron expression should be interpreted
+
+> This is a feature of [orisai/scheduler](https://github.com/orisai/scheduler)
+
 ```php
 use DateTimeZone;
 
 $explainer->explain('30 10 * * *', null, new DateTimeZone('America/New_York')); // At 10:30 in America/New_York time zone.
 ```
 
-## Translations
+## Localization
 
-Yeah, localization is actually not supported (yet). But the interface is ready for it!
+Translate expression into any supported locale
 
 ```php
-$explainer->getSupportedLanguages(); // array<string, string> e.g. ['en' => 'english']
-$explainer->explain('* * * * *', null, null, 'en');
+$explainer->explain('* * * * *', null, null, 'en'); // At every minute.
+$explainer->explain('* * * * *', null, null, 'cs'); // Každou minutu.
+$explainer->getSupportedLocales(); // array<string, string> e.g. ['en' => 'english', 'cs' => 'czech', /* ... */]
+$explainer->setDefaultLocale('cs');
 ```
+
+Currently supported locales are:
+
+- `cs` - czech / čeština
+- `en` - english
+
+In case given locale is not supported, the `UnsupportedLocale` exception is thrown.
 
 ## Handling unsupported expressions
 
@@ -89,3 +109,14 @@ try {
 This library is built on top of [dragonmantank/cron-expression](https://github.com/dragonmantank/cron-expression).
 For best compatibility, use it to interpret your expressions.
 For example with [orisai/scheduler](https://github.com/orisai/scheduler)!
+
+## Contributing
+
+To add support for a new locale:
+
+- create file in `src/Translator/translations` and add translations for all the keys used in other translation files
+- add it to supported locales in `DefaultCronExpressionExplainer`
+- generate translations via `make update-snapshots`
+- verify that the generated test translations in `tests/Snapshots/translations` make sense and match their configuration
+- run `make tests`, it should pass now :)
+- mention the locale in the documentation

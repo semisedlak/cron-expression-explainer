@@ -16,6 +16,7 @@ final class StepPartTest extends TestCase
 		$step = 2;
 		$part = new StepPart($range, $step);
 
+		self::assertSame('step', $part->getName());
 		self::assertSame($range, $part->getRange());
 		self::assertSame($step, $part->getStep());
 	}

@@ -7,7 +7,7 @@ use DateTimeZone;
 use Generator;
 use Orisai\CronExpressionExplainer\DefaultCronExpressionExplainer;
 use Orisai\CronExpressionExplainer\Exception\UnsupportedExpression;
-use Orisai\CronExpressionExplainer\Exception\UnsupportedLanguage;
+use Orisai\CronExpressionExplainer\Exception\UnsupportedLocale;
 use PHPUnit\Framework\TestCase;
 
 final class DefaultCronExpressionExplainerTest extends TestCase
@@ -175,11 +175,6 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		];
 
 		yield [
-			'10 0-23 * * *',
-			'At minute 10 past every hour from 0 through 23.',
-		];
-
-		yield [
 			'* 1-23 * * *',
 			'At every minute past every hour from 1 through 23.',
 		];
@@ -291,6 +286,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'01 02 * * *',
 			'At 02:01.',
 		];
+
+		yield [
+			'10 0-23 * * *',
+			'At minute 10 past every hour from 0 through 23.',
+		];
 	}
 
 	public function provideExplainDaysOfMonth(): Generator
@@ -397,12 +397,12 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 
 		yield [
 			'* * 1W * *',
-			'At every minute on a weekday closest to the 1st.',
+			'At every minute on a weekday nearest to the 1st.',
 		];
 
 		yield [
 			'* * 15W * *',
-			'At every minute on a weekday closest to the 15th.',
+			'At every minute on a weekday nearest to the 15th.',
 		];
 
 		yield [
@@ -953,6 +953,11 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 			'* * 3 FEB *',
 			'At every minute on 3rd of February.',
 		];
+
+		yield [
+			'* * 4 2 *',
+			'At every minute on 4th of February.',
+		];
 	}
 
 	public function provideExplainAllValuesCombinations(): Generator
@@ -1043,17 +1048,22 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 
 		yield [
 			'* * 1 * 1',
-			'At every minute on day-of-month 1 and on every Monday.',
+			'At every minute on day-of-month 1 and on Monday.',
+		];
+
+		yield [
+			'* * 1 * 1,2',
+			'At every minute on day-of-month 1 and on Monday and Tuesday.',
 		];
 
 		yield [
 			'* * 1 2 5',
-			'At every minute on day-of-month 1 and on every Friday in February.',
+			'At every minute on day-of-month 1 and on Friday in February.',
 		];
 
 		yield [
 			'1 1 1 1 1',
-			'At 01:01 on day-of-month 1 and on every Monday in January.',
+			'At 01:01 on day-of-month 1 and on Monday in January.',
 		];
 
 		yield [
@@ -1072,6 +1082,8 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		// Are impossible and not officially supported
 		//	* * * * 7L/2
 		//	* * * * 7#5/2
+		//	* * 1W/2 * *
+		//	* * 1W-5W/2 * *
 
 		// Perhaps possible, but are not supported
 		/** @see DayOfMonthField */
@@ -1195,29 +1207,91 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		);
 	}
 
-	public function testSupportedLanguages(): void
+	public function testSupportedLocales(): void
 	{
 		$explainer = new DefaultCronExpressionExplainer();
 
 		self::assertSame(
-			['en' => 'english'],
-			$explainer->getSupportedLanguages(),
+			[
+				'cs' => 'czech',
+				'en' => 'english',
+			],
+			$explainer->getSupportedLocales(),
 		);
 	}
 
-	public function testNotSupportedLanguage(): void
+	public function testNotSupportedLocale(): void
 	{
 		$explainer = new DefaultCronExpressionExplainer();
 
 		$exception = null;
 		try {
 			$explainer->explain('* * * * *', null, null, 'nope');
-		} catch (UnsupportedLanguage $exception) {
+		} catch (UnsupportedLocale $exception) {
 			// Bellow
 		}
 
 		self::assertNotNull($exception);
-		self::assertSame('nope', $exception->getLanguage());
+		self::assertSame('nope', $exception->getLocale());
+	}
+
+	public function testDefaultLocale(): void
+	{
+		$explainer = new DefaultCronExpressionExplainer();
+		self::assertSame('At every minute.', $explainer->explain('* * * * *'));
+
+		$explainer->setDefaultLocale('cs');
+		self::assertSame('Každou minutu.', $explainer->explain('* * * * *'));
+	}
+
+	public function testExplainInLocales(): void
+	{
+		$explainer = new DefaultCronExpressionExplainer();
+
+		self::assertSame(
+			[],
+			$explainer->explainInLocales([], '* * * * *'),
+		);
+
+		self::assertSame(
+			[
+				'cs' => 'Každou minutu.',
+				'en' => 'At every minute.',
+			],
+			$explainer->explainInLocales(['cs', 'en'], '* * * * *'),
+		);
+
+		self::assertSame(
+			[
+				'en' => 'At every minute.',
+				'cs' => 'Každou minutu.',
+			],
+			$explainer->explainInLocales(['en', 'cs'], '* * * * *'),
+		);
+
+		self::assertSame(
+			[
+				'en' => 'At every second.',
+				'cs' => 'Každou sekundu.',
+			],
+			$explainer->explainInLocales(['en', 'cs'], '* * * * *', 1),
+		);
+
+		self::assertSame(
+			[
+				'en' => 'At every minute in Europe/Prague time zone.',
+				'cs' => 'Každou minutu v časové zóně Europe/Prague.',
+			],
+			$explainer->explainInLocales(['en', 'cs'], '* * * * *', null, new DateTimeZone('Europe/Prague')),
+		);
+	}
+
+	public function testExplainInLocaleUnsupportedLocale(): void
+	{
+		$explainer = new DefaultCronExpressionExplainer();
+
+		$this->expectException(UnsupportedLocale::class);
+		$explainer->explainInLocales(['unknown'], '* * * * *');
 	}
 
 }

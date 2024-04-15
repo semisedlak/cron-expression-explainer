@@ -22,34 +22,36 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 		return $part;
 	}
 
-	protected function getInStepName(): string
-	{
-		return $this->getInValueName();
-	}
-
-	protected function getInRangeName(): string
-	{
-		return $this->getInValueName();
-	}
-
-	protected function getInValueName(): string
+	protected function getKey(): string
 	{
 		return 'day-of-month';
 	}
 
-	protected function getAsteriskDescription(): string
+	protected function getAsteriskDescription(string $locale): string
 	{
 		return '';
 	}
 
-	protected function translateValue(string $value, bool $renderName): string
+	protected function translateValue(string $value, string $context, string $locale, bool $renderName): string
 	{
 		if ($value === 'L') {
-			return 'a last ' . $this->getInValueName();
+			return $this->translator->translate(
+				'day-of-month-last-day',
+				[
+					'context' => $context,
+				],
+				$locale,
+			);
 		}
 
 		if ($value === 'LW') {
-			return 'a last weekday';
+			return $this->translator->translate(
+				'day-of-month-last-weekday',
+				[
+					'context' => $context,
+				],
+				$locale,
+			);
 		}
 
 		$nearest = str_ends_with($value, 'W');
@@ -61,11 +63,28 @@ final class DayOfMonthInterpreter extends BasePartInterpreter
 		$intValue = $this->convertNumericValue($value);
 
 		if ($nearest) {
-			return 'a weekday closest to the ' . $value . $this->getNumberExtension($intValue);
+			return $this->translator->translate(
+				'day-of-month-nearest-weekday',
+				[
+					'day' => $intValue,
+					'context' => $context,
+				],
+				$locale,
+			);
 		}
 
-		return ($renderName ? ("{$this->getInValueName()} ") : '')
-			. $intValue;
+		$key = $this->getKey();
+		if ($renderName) {
+			$key .= '-named';
+		}
+
+		return $this->translator->translate(
+			$key,
+			[
+				'day' => $intValue,
+			],
+			$locale,
+		);
 	}
 
 	public function convertNumericValue(string $value): int

@@ -42,41 +42,26 @@ final class MonthInterpreter extends BasePartInterpreter
 		return $part;
 	}
 
-	protected function getInStepName(): string
-	{
-		return $this->getInRangeName();
-	}
-
-	protected function getInRangeName(): string
+	protected function getKey(): string
 	{
 		return 'month';
 	}
 
-	protected function getAsteriskDescription(): string
+	protected function getAsteriskDescription(string $locale): string
 	{
 		return '';
 	}
 
-	protected function translateValue(string $value, bool $renderName): string
+	protected function translateValue(string $value, string $context, string $locale, bool $renderName): string
 	{
-		$intValue = $this->convertNumericValue($value);
-
-		$map = [
-			1 => 'January',
-			2 => 'February',
-			3 => 'March',
-			4 => 'April',
-			5 => 'May',
-			6 => 'June',
-			7 => 'July',
-			8 => 'August',
-			9 => 'September',
-			10 => 'October',
-			11 => 'November',
-			12 => 'December',
-		];
-
-		return $map[$intValue];
+		return $this->translator->translate(
+			$this->getKey(),
+			[
+				'month' => $this->convertNumericValue($value),
+				'context' => $context,
+			],
+			$locale,
+		);
 	}
 
 	private function convertNumericValue(string $value): int
