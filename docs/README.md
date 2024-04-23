@@ -78,6 +78,7 @@ Translate expression into any supported locale
 ```php
 $explainer->explain('* * * * *', null, null, 'en'); // At every minute.
 $explainer->explain('* * * * *', null, null, 'cs'); // Každou minutu.
+$explainer->explain('* * * * *', null, null, 'sk'); // Každú minútu.
 $explainer->getSupportedLocales(); // array<string, string> e.g. ['en' => 'english', 'cs' => 'czech', /* ... */]
 $explainer->setDefaultLocale('cs');
 ```
@@ -86,6 +87,7 @@ Currently supported locales are:
 
 - `cs` - czech / čeština
 - `en` - english
+- `sk` - slovak / slovenčina
 
 In case given locale is not supported, the `UnsupportedLocale` exception is thrown.
 
