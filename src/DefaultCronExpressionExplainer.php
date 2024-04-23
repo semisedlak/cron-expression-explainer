@@ -247,8 +247,9 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 				$explanation .= ' ';
 			}
 
+			$hourPartValueNumeric = $this->hourInterpreter->convertNumericValue($hourPartValue);
 			$hourPartValue = str_pad(
-				(string) $this->hourInterpreter->convertNumericValue($hourPartValue),
+				(string) $hourPartValueNumeric,
 				2,
 				'0',
 				STR_PAD_LEFT,
@@ -261,6 +262,7 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 			);
 
 			$explanation .= $this->translator->translate('hour+minute', [
+				'hourNumeric' => $hourPartValueNumeric,
 				'hour' => $hourPartValue,
 				'minute' => $minutePartValue,
 			], $locale);

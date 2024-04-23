@@ -150,7 +150,17 @@ return [
         other {{month} - unknown}
       }}
     }',
-	'hour+minute' => 'v {hour}:{minute}',
+	'hour+minute' => '{hourNumeric, select,
+      2 {ve}
+      3 {ve}
+      4 {ve}
+      12 {ve}
+      13 {ve}
+      14 {ve}
+      22 {ve}
+      23 {ve}
+      other {v}
+    } {hourNumeric}:{minute}',
 	'day-of-month+month' => '{day}. {month, select,
       1 {ledna}
       2 {února}

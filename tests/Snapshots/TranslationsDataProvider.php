@@ -176,7 +176,15 @@ final class TranslationsDataProvider
 		yield ['@midnight'];
 		yield ['0 0 * * *'];
 		yield ['10 0 * * *'];
+		yield ['0 2 * * *'];
+		yield ['0 3 * * *'];
+		yield ['0 4 * * *'];
 		yield ['0 10 * * *'];
+		yield ['0 12 * * *'];
+		yield ['0 13 * * *'];
+		yield ['0 14 * * *'];
+		yield ['0 22 * * *'];
+		yield ['0 23 * * *'];
 	}
 
 	/**
