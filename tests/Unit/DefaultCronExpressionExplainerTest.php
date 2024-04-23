@@ -1214,6 +1214,7 @@ final class DefaultCronExpressionExplainerTest extends TestCase
 		self::assertSame(
 			[
 				'cs' => 'czech',
+				'sk' => 'slovak',
 				'en' => 'english',
 			],
 			$explainer->getSupportedLocales(),

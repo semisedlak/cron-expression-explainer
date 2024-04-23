@@ -62,6 +62,7 @@ final class DefaultCronExpressionExplainer implements CronExpressionExplainer
 	{
 		return [
 			'cs' => 'czech',
+			'sk' => 'slovak',
 			'en' => 'english',
 		];
 	}
