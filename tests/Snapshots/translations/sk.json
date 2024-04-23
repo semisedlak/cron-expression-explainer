@@ -172,42 +172,42 @@
         "seconds": null,
         "timezone": null,
         "english": "At 00:00.",
-        "translation": "O 0:00."
+        "translation": "O 00:00."
     },
     "hour+minute-1": {
         "expression": "0 0 * * *",
         "seconds": null,
         "timezone": null,
         "english": "At 00:00.",
-        "translation": "O 0:00."
+        "translation": "O 00:00."
     },
     "hour+minute-2": {
         "expression": "10 0 * * *",
         "seconds": null,
         "timezone": null,
         "english": "At 00:10.",
-        "translation": "O 0:10."
+        "translation": "O 00:10."
     },
     "hour+minute-3": {
         "expression": "0 2 * * *",
         "seconds": null,
         "timezone": null,
         "english": "At 02:00.",
-        "translation": "O 2:00."
+        "translation": "O 02:00."
     },
     "hour+minute-4": {
         "expression": "0 3 * * *",
         "seconds": null,
         "timezone": null,
         "english": "At 03:00.",
-        "translation": "O 3:00."
+        "translation": "O 03:00."
     },
     "hour+minute-5": {
         "expression": "0 4 * * *",
         "seconds": null,
         "timezone": null,
         "english": "At 04:00.",
-        "translation": "O 4:00."
+        "translation": "O 04:00."
     },
     "hour+minute-6": {
         "expression": "0 10 * * *",

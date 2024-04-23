@@ -159,7 +159,7 @@ return [
     }',
 	'hour+minute' => '{hourNumeric, select,
       other {o}
-    } {hourNumeric}:{minute}',
+    } {hour}:{minute}',
 	'day-of-month+month' => '{day}. {month, select,
       1 {januára}
       2 {februára}
