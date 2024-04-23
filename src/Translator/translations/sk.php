@@ -107,7 +107,6 @@ return [
       other {v posledný pracovný deň}
     }',
 	'day-of-month-nearest-weekday' => '{context, select,
-      range {pracovného dňa najbližšieho k {day}.}
       other {pracovného dňa najbližšieho k {day}.}
     }',
 	'before-month' => ' v ',
@@ -159,14 +158,6 @@ return [
       }}
     }',
 	'hour+minute' => '{hourNumeric, select,
-      2 {o}
-      3 {o}
-      4 {o}
-      12 {o}
-      13 {o}
-      14 {o}
-      22 {o}
-      23 {o}
       other {o}
     } {hourNumeric}:{minute}',
 	'day-of-month+month' => '{day}. {month, select,
